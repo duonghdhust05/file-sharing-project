@@ -171,3 +171,5 @@ Dự án tích hợp sẵn hệ thống CI/CD tự động bằng **GitHub Actio
 3. 📘 **Bản Thiết kế Phần mềm (HLD + LLD)**: Xem [docs/SDD.md](docs/SDD.md) và tự hoàn thiện chương được phân công.
 4. ⚙️ **Hợp đồng Giao thức Cốt lõi**: Đọc kỹ [include/common/FSPProtocol.h](include/common/FSPProtocol.h) trước khi viết lệnh mạng.
 5. 🚀 **Kiến trúc CI/CD & Kiểm thử**: Đọc [docs/CICD.md](docs/CICD.md) để biết cách test trên máy trước khi push.
+6. 🛡️ **Quy chuẩn Kiểm thử & TDD Thực chiến**: Xem [docs/TDD/README.md](docs/TDD/README.md) để nắm ma trận 6 Probes đối kháng.
+7. 🤖 **Chỉ dẫn Kỹ thuật cho Agent & Dev**: Đọc [AGENTS.md](AGENTS.md) để tuân thủ 5 nguyên tắc cấm tuyệt đối khi pair-programming.
