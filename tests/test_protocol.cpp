@@ -2,25 +2,26 @@
 #include <cstring>
 #include <iostream>
 #include <string>
+
 #include "common/Config.h"
 #include "common/FSPProtocol.h"
 
 // Simple Lightweight Test Framework for CI
-#define ASSERT_TRUE(condition, message)                                         \
-    do {                                                                        \
-        if (!(condition)) {                                                     \
-            std::cerr << "[FAIL] " << message << " (" << #condition << ")\n";   \
-            return 1;                                                           \
-        }                                                                       \
+#define ASSERT_TRUE(condition, message)                                       \
+    do {                                                                      \
+        if (!(condition)) {                                                   \
+            std::cerr << "[FAIL] " << message << " (" << #condition << ")\n"; \
+            return 1;                                                         \
+        }                                                                     \
     } while (0)
 
-#define ASSERT_EQ(val1, val2, message)                                          \
-    do {                                                                        \
-        if ((val1) != (val2)) {                                                 \
-            std::cerr << "[FAIL] " << message << " Expected: " << (val2)        \
-                      << ", Actual: " << (val1) << "\n";                        \
-            return 1;                                                           \
-        }                                                                       \
+#define ASSERT_EQ(val1, val2, message)                                                             \
+    do {                                                                                           \
+        if ((val1) != (val2)) {                                                                    \
+            std::cerr << "[FAIL] " << message << " Expected: " << (val2) << ", Actual: " << (val1) \
+                      << "\n";                                                                     \
+            return 1;                                                                              \
+        }                                                                                          \
     } while (0)
 
 int testHeaderSizes() {
@@ -87,10 +88,14 @@ int main() {
     std::cout << "       FSP UNIT TEST SUITE (CI/CD Automated)        \n";
     std::cout << "====================================================\n";
 
-    if (testHeaderSizes() != 0) return 1;
-    if (testMagicByteAndDefaults() != 0) return 1;
-    if (testCRC32Calculation() != 0) return 1;
-    if (testLinuxPermissionsBitmask() != 0) return 1;
+    if (testHeaderSizes() != 0)
+        return 1;
+    if (testMagicByteAndDefaults() != 0)
+        return 1;
+    if (testCRC32Calculation() != 0)
+        return 1;
+    if (testLinuxPermissionsBitmask() != 0)
+        return 1;
 
     std::cout << "====================================================\n";
     std::cout << "  ALL PROTOCOL UNIT TESTS PASSED SUCCESSFULLY! (4/4)\n";

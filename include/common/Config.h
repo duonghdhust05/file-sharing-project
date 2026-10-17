@@ -7,24 +7,25 @@
 namespace FSP {
 namespace Config {
 
-    // Network defaults
-    constexpr uint16_t SERVER_PORT      = 8088;
-    constexpr int      BACKLOG          = 64;
-    constexpr int      THREAD_POOL_SIZE = 16;
-    constexpr int      BUFFER_SIZE      = 128 * 1024; // 128 KB buffer
-    constexpr int      SOCKET_TIMEOUT_S = 30;
+// Network defaults
+constexpr uint16_t SERVER_PORT = 8088;
+constexpr int BACKLOG = 64;
+constexpr int THREAD_POOL_SIZE = 16;
+constexpr int BUFFER_SIZE = 128 * 1024;  // 128 KB buffer
+constexpr int SOCKET_TIMEOUT_S = 30;
 
-    // Sandbox storage defaults
-    inline const std::string DEFAULT_SERVER_STORAGE = "./storage/server_root";
-    inline const std::string DEFAULT_CLIENT_STORAGE = "./storage/client_downloads";
+// Sandbox storage defaults
+inline const std::string DEFAULT_SERVER_STORAGE = "./storage/server_root";
+inline const std::string DEFAULT_CLIENT_STORAGE = "./storage/client_downloads";
 
-} // namespace Config
+}  // namespace Config
 
 // Standard IEEE 802.3 CRC32 implementation
 class CRC32 {
 public:
     static uint32_t calculate(const void* data, size_t length) {
-        if (!data || length == 0) return 0;
+        if (!data || length == 0)
+            return 0;
         const uint8_t* bytes = static_cast<const uint8_t*>(data);
         uint32_t crc = 0xFFFFFFFF;
         const uint32_t* table = getTable();
@@ -57,6 +58,6 @@ private:
     }
 };
 
-} // namespace FSP
+}  // namespace FSP
 
-#endif // FSP_CONFIG_H
+#endif  // FSP_CONFIG_H
