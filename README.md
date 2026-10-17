@@ -52,10 +52,10 @@ file-sharing-project/
 
 | Thành viên | Phụ trách chính | Module cốt lõi | Checklist & Báo cáo SDD |
 | :--- | :--- | :--- | :--- |
-| **Thành viên 1** | **Core Network Engine** | Raw TCP Socket, Framing 42-byte, Anti-Sticky Loop, Server ThreadPool | [docs/WBS.md](docs/WBS.md) (M1) & [docs/SDD.md](docs/SDD.md) (Chương 3) |
-| **Thành viên 2** | **Auth & Permission** | Salted SHA-256, Session Token, Linux-like 3-tier Permissions ($rwx$), ACL | [docs/WBS.md](docs/WBS.md) (M2) & [docs/SDD.md](docs/SDD.md) (Chương 4) |
-| **Thành viên 3** | **Filesystem & Transfer**| Virtual Sandbox, Chunking 64KB, Recursive Folder Transfer, Search Engine | [docs/WBS.md](docs/WBS.md) (M3) & [docs/SDD.md](docs/SDD.md) (Chương 5) |
-| **Thành viên 4** | **Client GUI & Integration** | Desktop Qt6 Client, Multi-threading UI, Progress Bar, Web Client TypeScript | [docs/WBS.md](docs/WBS.md) (M4) & [docs/SDD.md](docs/SDD.md) (Chương 6) |
+| **Trần Sỹ Nguyên** | **Core Network Engine** | Raw TCP Socket, Framing 42-byte, Anti-Sticky Loop, Server ThreadPool | [docs/WBS.md](docs/WBS.md) (M1) & [docs/SDD.md](docs/SDD.md) (Chương 3) |
+| **Bùi Đức Hiếu** | **Auth & Permission** | Salted SHA-256, Session Token, Linux-like 3-tier Permissions ($rwx$), ACL | [docs/WBS.md](docs/WBS.md) (M2) & [docs/SDD.md](docs/SDD.md) (Chương 4) |
+| **Vũ Nhật Minh Dương** | **Filesystem & Transfer**| Virtual Sandbox, Chunking 64KB, Recursive Folder Transfer, Search Engine | [docs/WBS.md](docs/WBS.md) (M3) & [docs/SDD.md](docs/SDD.md) (Chương 5) |
+| **Hà Đức Dương** | **Client GUI & Integration** | Desktop Qt6 Client, Multi-threading UI, Progress Bar, Web Client TypeScript | [docs/WBS.md](docs/WBS.md) (M4) & [docs/SDD.md](docs/SDD.md) (Chương 6) |
 
 ---
 
@@ -103,10 +103,10 @@ make -j$(nproc)
 * `main`: Nhánh chính thức, chỉ merge code khi đã hoàn thiện và kiểm thử đạt chuẩn.
 * `develop`: Nhánh tích hợp chung của cả nhóm.
 * **Nhánh tính năng của từng thành viên**:
-  * Thành viên 1: `feat/m1-network-engine`
-  * Thành viên 2: `feat/m2-auth-permissions`
-  * Thành viên 3: `feat/m3-filesystem-transfer`
-  * Thành viên 4: `feat/m4-gui-client`
+  * Trần Sỹ Nguyên: `feat/m1-network-engine`
+  * Bùi Đức Hiếu: `feat/m2-auth-permissions`
+  * Vũ Nhật Minh Dương: `feat/m3-filesystem-transfer`
+  * Hà Đức Dương: `feat/m4-gui-client`
 
 ### 5.2 Các bước bắt đầu công việc hàng ngày
 ```bash
