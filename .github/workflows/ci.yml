@@ -1,0 +1,99 @@
+name: FSP Industry-Standard CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feat/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # =========================================================================
+  # 1. Code Quality & Format Gatekeeper
+  # =========================================================================
+  code-formatting:
+    name: Code Formatting & Static Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Clang-Format
+        run: |
+          sudo apt update
+          sudo apt install -y clang-format
+
+      - name: Verify Code Formatting
+        run: |
+          echo "Checking C++ formatting against .clang-format..."
+          find include src tests -type f \( -name "*.h" -o -name "*.hpp" -o -name "*.cpp" \) -exec clang-format --dry-run --Werror {} +
+          echo "Code formatting check passed."
+
+  # =========================================================================
+  # 2. Multi-Platform Matrix Build & Automated Test Execution
+  # =========================================================================
+  build-and-test:
+    name: Build & Test (${{ matrix.os }} - ${{ matrix.build_type }})
+    needs: code-formatting
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release, Debug]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.25.x'
+
+      # Linux: Enable AddressSanitizer (ASan) & UndefinedBehaviorSanitizer (UBSan) in Debug
+      - name: Configure CMake (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          if [ "${{ matrix.build_type }}" = "Debug" ]; then
+            echo "Enabling AddressSanitizer and UndefinedBehaviorSanitizer for memory safety testing..."
+            cmake -B build -S . \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g"
+          else
+            cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+          fi
+
+      # Windows: Standard MSVC Configuration
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build All Targets (Server, Client CLI, Tests)
+        run: |
+          cmake --build build --config ${{ matrix.build_type }} --parallel
+
+      - name: Run Automated Test Suite (CTest)
+        working-directory: build
+        run: |
+          ctest --output-on-failure -C ${{ matrix.build_type }}
+
+      - name: Upload Test Executable Artifact (Debug Only)
+        if: matrix.build_type == 'Debug'
+        uses: actions/upload-artifact@v4
+        with:
+          name: fsp-debug-${{ matrix.os }}
+          path: |
+            build/fsp_server*
+            build/fsp_client_cli*
+            build/fsp_tests*
+          retention-days: 7

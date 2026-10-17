@@ -20,12 +20,14 @@ namespace Config {
 
 } // namespace Config
 
-// Fast lookup CRC32 helper
+// Standard IEEE 802.3 CRC32 implementation
 class CRC32 {
 public:
     static uint32_t calculate(const void* data, size_t length) {
+        if (!data || length == 0) return 0;
         const uint8_t* bytes = static_cast<const uint8_t*>(data);
         uint32_t crc = 0xFFFFFFFF;
+        const uint32_t* table = getTable();
         for (size_t i = 0; i < length; ++i) {
             uint8_t byte = bytes[i];
             crc = (crc >> 8) ^ table[(crc ^ byte) & 0xFF];
@@ -34,12 +36,25 @@ public:
     }
 
 private:
-    static inline const uint32_t table[16] = {
-        0x00000000, 0x1DB71064, 0x3B6E20C8, 0x26D930AC,
-        0x76DC4190, 0x6B6B51F4, 0x4DB26158, 0x5005713C,
-        0xEDB88320, 0xF00F9344, 0xD6D6A3E8, 0xCB61B38C,
-        0x9B64C2B0, 0x86D3D2D4, 0xA00AE278, 0xBDBDF21C
-    };
+    static const uint32_t* getTable() {
+        static uint32_t table[256];
+        static bool initialized = false;
+        if (!initialized) {
+            for (uint32_t i = 0; i < 256; ++i) {
+                uint32_t c = i;
+                for (size_t j = 0; j < 8; ++j) {
+                    if (c & 1) {
+                        c = 0xEDB88320L ^ (c >> 1);
+                    } else {
+                        c = c >> 1;
+                    }
+                }
+                table[i] = c;
+            }
+            initialized = true;
+        }
+        return table;
+    }
 };
 
 } // namespace FSP

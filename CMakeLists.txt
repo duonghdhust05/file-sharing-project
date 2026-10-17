@@ -57,6 +57,15 @@ if(BUILD_QT_GUI)
     # target_link_libraries(fsp_client_gui PRIVATE fsp_common Qt::Widgets Qt::Network)
 endif()
 
+# 4. Testing Target (CTest Automated Suite)
+enable_testing()
+add_executable(fsp_tests
+    tests/test_protocol.cpp
+)
+target_link_libraries(fsp_tests PRIVATE fsp_common ${PLATFORM_NETWORK_LIBS})
+add_test(NAME FSP_Protocol_UnitTests COMMAND fsp_tests)
+
 message(STATUS "FSP Build System Configured Successfully.")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "Platform Network Libraries: ${PLATFORM_NETWORK_LIBS}")
+message(STATUS "Automated Testing: ENABLED")

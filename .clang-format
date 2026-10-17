@@ -1,0 +1,33 @@
+---
+BasedOnStyle: Google
+Language: Cpp
+Standard: c++17
+
+# Indentation & Alignment
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+AccessModifierOffset: -4
+
+# Braces & Flow Control
+BreakBeforeBraces: Attach
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+
+# Spaces & Pointers
+PointerAlignment: Left
+ReferenceAlignment: Left
+SpacesBeforeTrailingComments: 2
+SpaceAfterCStyleCast: false
+SpaceBeforeParens: ControlStatements
+
+# Includes Sorting
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+
+# Binary Packing
+AlignConsecutiveAssignments: None
+AlignConsecutiveDeclarations: None
+...

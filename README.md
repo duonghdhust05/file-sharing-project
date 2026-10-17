@@ -3,6 +3,11 @@
 > **Ngôn ngữ:** C++17 (Raw TCP Sockets - Winsock2 / POSIX)  
 > **Giao diện:** Qt6 / Qt5 Desktop Client & TypeScript Web Client  
 
+[![CI Pipeline](https://github.com/duonghdhust05/file-sharing-project/actions/workflows/ci.yml/badge.svg)](https://github.com/duonghdhust05/file-sharing-project/actions/workflows/ci.yml)
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://isocpp.org/)
+[![CMake](https://img.shields.io/badge/CMake-3.16%2B-brightgreen.svg)](https://cmake.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 ---
 
 ## 1. TỔNG QUAN DỰ ÁN
@@ -12,6 +17,7 @@ Dự án xây dựng một hệ thống chia sẻ tệp tin trực tuyến hoàn
 * **Hệ thống Quản lý Người dùng & Phân quyền POSIX/Linux**: Đăng ký, đăng nhập bảo mật (Salted SHA-256), phân quyền Owner-Group-Others ($rwx$) và mức độ chia sẻ Private / Shared / Public.
 * **Truyền Tệp & Thư mục Khối lớn**: Chunking 64KB, kiểm soát tiến trình truyền tải, chống tràn RAM và hỗ trợ đệ quy cả cây thư mục.
 * **Giao diện Trực quan (GUI)**: Ứng dụng Desktop Qt C++ đa luồng mượt mà và Giao diện Web (TypeScript + React) phục vụ thuyết trình trực quan.
+* **Hạ tầng CI/CD Chuẩn Công nghiệp**: Tự động hóa kiểm tra định dạng code (clang-format), matrix build đa nền tảng (Ubuntu/Windows), kiểm tra an toàn bộ nhớ (AddressSanitizer) và tự động đóng gói release.
 
 ---
 
@@ -19,17 +25,23 @@ Dự án xây dựng một hệ thống chia sẻ tệp tin trực tuyến hoàn
 
 ```
 file-sharing-project/
-├── CMakeLists.txt                # Cấu hình build C++17 cross-platform
+├── .github/                      # CI/CD PIPELINE (GITHUB ACTIONS)
+│   └── workflows/
+│       ├── ci.yml                # CI: Matrix Build, Clang-Format, Sanitizers & CTest
+│       └── release.yml           # CD: Tự động đóng gói ZIP/TAR khi release tag
+├── .clang-format                 # Chuẩn hóa format code C++17 cho toàn nhóm
+├── CMakeLists.txt                # Cấu hình build C++17 cross-platform & CTest
 ├── README.md                     # Hướng dẫn dự án, setup môi trường & Git workflow
 ├── .gitignore                    # Bỏ qua file build, tạm, sandbox data
 ├── docs/                         # BỘ TÀI LIỆU CHUẨN MỰC CỦA DỰ ÁN
 │   ├── SRS.md                    # Bản Đặc tả Yêu cầu Phần mềm (IEEE 830)
 │   ├── WBS.md                    # Phân rã Công việc & Checklist 4 thành viên độc lập
-│   └── SDD.md                    # Bản Thiết kế Phần mềm (HLD + LLD)
+│   ├── SDD.md                    # Bản Thiết kế Phần mềm (HLD + LLD)
+│   └── CICD.md                   # Bản Thiết kế Kiến trúc CI/CD Chuẩn Công nghiệp
 ├── include/                      # CÁC FILE HEADER & INTERFACE CONTRACTS
 │   ├── common/
 │   │   ├── FSPProtocol.h         # [QUAN TRỌNG NHẤT] Định nghĩa Frame, Events, Bitmasks
-│   │   └── Config.h              # Hằng số cấu hình hệ thống & CRC32
+│   │   └── Config.h              # Hằng số cấu hình hệ thống & CRC32 IEEE 802.3
 │   ├── server/                   # Headers dành riêng cho Server
 │   └── client/                   # Headers dành riêng cho Client
 ├── src/                          # MÃ NGUỒN C++
@@ -39,6 +51,8 @@ file-sharing-project/
 │   ├── client_cli/
 │   │   └── main.cpp              # Entry point của Tool dòng lệnh test
 │   └── client_gui/               # Mã nguồn Desktop GUI (Qt)
+├── tests/                        # HỆ THỐNG KIỂM THỬ TỰ ĐỘNG (UNIT TESTS)
+│   └── test_protocol.cpp         # Test header 42-byte, CRC32, bitmask quyền hạn
 ├── storage/                      # VÙNG LƯU TRỮ SANDBOX (Được gitignore)
 │   ├── server_root/              # Thư mục gốc lưu trữ của Server
 │   └── client_downloads/         # Thư mục tải về mặc định của Client
@@ -138,8 +152,22 @@ git push origin feat/m1-network-engine
 
 ---
 
-## 6. TÀI LIỆU QUAN TRỌNG CẦN ĐỌC TRƯỚC KHI CODE
-1. 📄 **Đặc tả Yêu cầu**: Đọc [docs/SRS.md](docs/SRS.md) để nắm chắc 7 yêu cầu chức năng bắt buộc.
-2. 📋 **Checklist Nhiệm vụ**: Đọc [docs/WBS.md](docs/WBS.md) để đánh dấu các đầu việc của mình theo từng tuần.
-3. 📘 **Bản Thiết kế Chi tiết**: Xem [docs/SDD.md](docs/SDD.md) và tự viết phần của mình vào đúng chương được phân công.
-4. ⚙️ **Hợp đồng Giao thức**: Đọc kỹ [include/common/FSPProtocol.h](include/common/FSPProtocol.h) trước khi viết bất kỳ dòng lệnh mạng nào.
+## 6. HẠ TẦNG CI/CD VÀ QUY CHUẨN CHẤT LƯỢNG (CI/CD PIPELINE)
+
+Dự án tích hợp sẵn hệ thống CI/CD tự động bằng **GitHub Actions** nhằm đảm bảo mã nguồn ổn định 100% trước khi merge:
+* **Kiểm tra định dạng (`clang-format`)**: Bắt buộc tuân thủ quy tắc trong `.clang-format` (thụt đầu dòng 4 spaces, tối đa 100 ký tự/dòng).
+* **Matrix Build đa nền tảng**: Tự động biên dịch trên cả `ubuntu-latest` (GCC) và `windows-latest` (MSVC) ở cả 2 chế độ `Release` và `Debug`.
+* **An toàn Bộ nhớ (AddressSanitizer)**: Trên Linux Debug, CI tự động kích hoạt `ASan` và `UBSan` để bắt lỗi tràn bộ nhớ (Buffer Overflow) trong các mảng đệm socket.
+* **Tự động Kiểm thử (`CTest`)**: Chạy bộ unit test trong `tests/test_protocol.cpp` để kiểm tra kích thước header 42 bytes, thuật toán CRC32 và ma trận quyền hạn.
+* **Tự động Đóng gói Release (CD)**: Khi gắn tag phiên bản `v*.*.*`, hệ thống tự động build và tạo bản phát hành đính kèm file nén `.zip` (Windows) và `.tar.gz` (Linux).
+
+👉 Xem chi tiết cấu trúc và hướng dẫn tại: [docs/CICD.md](docs/CICD.md).
+
+---
+
+## 7. TÀI LIỆU QUAN TRỌNG CẦN ĐỌC TRƯỚC KHI CODE
+1. 📄 **Đặc tả Yêu cầu Phần mềm**: Đọc [docs/SRS.md](docs/SRS.md) để nắm chắc 7 yêu cầu chức năng bắt buộc.
+2. 📋 **Checklist Nhiệm vụ 4 Thành viên**: Đọc [docs/WBS.md](docs/WBS.md) để theo dõi tiến độ theo từng tuần.
+3. 📘 **Bản Thiết kế Phần mềm (HLD + LLD)**: Xem [docs/SDD.md](docs/SDD.md) và tự hoàn thiện chương được phân công.
+4. ⚙️ **Hợp đồng Giao thức Cốt lõi**: Đọc kỹ [include/common/FSPProtocol.h](include/common/FSPProtocol.h) trước khi viết lệnh mạng.
+5. 🚀 **Kiến trúc CI/CD & Kiểm thử**: Đọc [docs/CICD.md](docs/CICD.md) để biết cách test trên máy trước khi push.

@@ -1,0 +1,91 @@
+name: FSP Continuous Delivery (Automated Release)
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  # =========================================================================
+  # 1. Build & Package Release Binaries for Ubuntu & Windows
+  # =========================================================================
+  package-binaries:
+    name: Package (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: fsp-linux-x86_64.tar.gz
+            build_cmd: |
+              cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+              cmake --build build --config Release --parallel
+              mkdir package
+              cp build/fsp_server package/
+              cp build/fsp_client_cli package/
+              cp README.md package/
+              tar -czvf fsp-linux-x86_64.tar.gz -C package .
+          - os: windows-latest
+            artifact_name: fsp-windows-x64.zip
+            build_cmd: |
+              cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+              cmake --build build --config Release --parallel
+              mkdir package
+              copy build\Release\fsp_server.exe package\
+              copy build\Release\fsp_client_cli.exe package\
+              copy README.md package\
+              powershell Compress-Archive -Path package\* -DestinationPath fsp-windows-x64.zip
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.25.x'
+
+      - name: Build and Package
+        shell: bash
+        run: |
+          ${{ matrix.build_cmd }}
+
+      - name: Upload Packaged Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_name }}
+
+  # =========================================================================
+  # 2. Publish to GitHub Releases
+  # =========================================================================
+  publish-release:
+    name: Create GitHub Release
+    needs: package-binaries
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fsp-linux-x86_64.tar.gz
+
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fsp-windows-x64.zip
+
+      - name: Create GitHub Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            fsp-linux-x86_64.tar.gz
+            fsp-windows-x64.zip
+          generate_release_notes: true
+          draft: false
+          prerelease: false
