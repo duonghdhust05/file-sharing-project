@@ -1,0 +1,101 @@
+# ==========================================
+# FSP Project .gitignore
+# C++ / CMake / Qt / Visual Studio / VS Code
+# ==========================================
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+build/
+bin/
+lib/
+out/
+
+# CMake artifacts
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# IDE / Editor Files
+.vscode/
+.vs/
+*.sln
+*.vcxproj*
+*.user
+*.user.*
+.idea/
+*.swp
+*~
+*.suo
+
+# Qt Creator & QMake artifacts
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.moc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.qmlc
+*.jsc
+
+# Storage Sandboxes (Keep directories, ignore actual shared files)
+storage/server_root/*
+!storage/server_root/.gitkeep
+storage/client_downloads/*
+!storage/client_downloads/.gitkeep
+
+# Database & Runtime Logs
+*.log
+*.sqlite
+*.db
+*.pid
+
+# Web Gateway / Node.js
+web/node_modules/
+web/dist/
+web/.next/
+web/*.tsbuildinfo
+
+# OS specific files
+.DS_Store
+Thumbs.db
+desktop.ini
