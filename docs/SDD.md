@@ -4,17 +4,17 @@
 **Tên hệ thống:** File Sharing Protocol (FSP) System  
 **Ngôn ngữ cốt lõi:** C++17 (Raw Sockets: Winsock2 / POSIX Sockets)  
 **Giao diện:** Qt6 / Qt5 C++ Desktop Client & TypeScript Web Client  
-**Nhóm thực hiện:** Nhóm 4 thành viên  
+**Nhóm thực hiện:** Trần Sỹ Nguyên, Bùi Đức Hiếu, Vũ Nhật Minh Dương, Hà Đức Dương  
 
 ---
 
 ## MỤC LỤC
 1. [Chương 1: Tổng quan Dự án & Bối cảnh](#chương-1-tổng-quan-dự-án--bối-cảnh)
 2. [Chương 2: Thiết kế Kiến trúc Cấp cao (High-Level Design - HLD)](#chương-2-thiết-kế-kiến-trúc-cấp-cao-high-level-design---hld)
-3. [Chương 3: Chi tiết Tầng Mạng & Giao thức FSP (LLD - Thành viên 1)](#chương-3-chi-tiết-tầng-mạng--giao-thức-fsp-lld---thành-viên-1)
-4. [Chương 4: Hệ thống Người dùng & Phân quyền Linux (LLD - Thành viên 2)](#chương-4-hệ-thống-người-dùng--phân-quyền-linux-lld---thành-viên-2)
-5. [Chương 5: Virtual File System, Chunk Transfer & Search (LLD - Thành viên 3)](#chương-5-virtual-file-system-chunk-transfer--search-lld---thành-viên-3)
-6. [Chương 6: Kiến trúc Client GUI & Mở rộng Web TypeScript (LLD - Thành viên 4)](#chương-6-kiến-trúc-client-gui--mở-rộng-web-typescript-lld---thành-viên-4)
+3. [Chương 3: Chi tiết Tầng Mạng & Giao thức FSP (LLD - Trần Sỹ Nguyên)](#chương-3-chi-tiết-tầng-mạng--giao-thức-fsp-lld---trần-sỹ-nguyên)
+4. [Chương 4: Hệ thống Người dùng & Phân quyền Linux (LLD - Bùi Đức Hiếu)](#chương-4-hệ-thống-người-dùng--phân-quyền-linux-lld---bùi-đức-hiếu)
+5. [Chương 5: Virtual File System, Chunk Transfer & Search (LLD - Vũ Nhật Minh Dương)](#chương-5-virtual-file-system-chunk-transfer--search-lld---vũ-nhật-minh-dương)
+6. [Chương 6: Kiến trúc Client GUI & Mở rộng Web TypeScript (LLD - Hà Đức Dương)](#chương-6-kiến-trúc-client-gui--mở-rộng-web-typescript-lld---hà-đức-dương)
 7. [Chương 7: Kiểm thử Hệ thống & Đánh giá Hiệu năng](#chương-7-kiểm-thử-hệ-thống--đánh-giá-hiệu-năng)
 8. [Chương 8: Kết luận & Hướng phát triển](#chương-8-kết-luận--hướng-phát-triển)
 
@@ -74,8 +74,8 @@ Hệ thống được thiết kế theo mô hình 3 tầng phân rã rõ rệt:
 
 ---
 
-## CHƯƠNG 3: CHI TIẾT TẦNG MẠNG & GIAO THỨC FSP (LLD - THÀNH VIÊN 1)
-*(Phần này do **Thành viên 1** trực tiếp phụ trách và hoàn thiện báo cáo kỹ thuật)*
+## CHƯƠNG 3: CHI TIẾT TẦNG MẠNG & GIAO THỨC FSP (LLD - TRẦN SỸ NGUYÊN)
+*(Phần này do **Trần Sỹ Nguyên** trực tiếp phụ trách và hoàn thiện báo cáo kỹ thuật)*
 
 ### 3.1 Thiết kế Cấu trúc Gói tin (FSP Frame Layout)
 Giao thức FSP sử dụng cơ chế **Length-Prefixed Framing**. Mỗi frame bắt buộc bắt đầu bằng Header cố định 42 bytes:
@@ -119,8 +119,8 @@ bool readExact(int socketFd, void* buffer, size_t totalBytes) {
 
 ---
 
-## CHƯƠNG 4: HỆ THỐNG NGƯỜI DÙNG & PHÂN QUYỀN LINUX (LLD - THÀNH VIÊN 2)
-*(Phần này do **Thành viên 2** trực tiếp phụ trách và hoàn thiện báo cáo kỹ thuật)*
+## CHƯƠNG 4: HỆ THỐNG NGƯỜI DÙNG & PHÂN QUYỀN LINUX (LLD - BÙI ĐỨC HIẾU)
+*(Phần này do **Bùi Đức Hiếu** trực tiếp phụ trách và hoàn thiện báo cáo kỹ thuật)*
 
 ### 4.1 Cấu trúc Dữ liệu & Quản lý Phiên làm việc
 * **Bảng Người dùng (Users)**:
@@ -166,8 +166,8 @@ Mỗi tệp tin và thư mục có metadata lưu trữ: `owner_id`, `group_id`, 
 
 ---
 
-## CHƯƠNG 5: VIRTUAL FILE SYSTEM, CHUNK TRANSFER & SEARCH (LLD - THÀNH VIÊN 3)
-*(Phần này do **Thành viên 3** trực tiếp phụ trách và hoàn thiện báo cáo kỹ thuật)*
+## CHƯƠNG 5: VIRTUAL FILE SYSTEM, CHUNK TRANSFER & SEARCH (LLD - VŨ NHẬT MINH DƯƠNG)
+*(Phần này do **Vũ Nhật Minh Dương** trực tiếp phụ trách và hoàn thiện báo cáo kỹ thuật)*
 
 ### 5.1 Virtual File System & Cơ chế Chống Path Traversal
 * Toàn bộ tệp tin của người dùng được giới hạn trong thư mục gốc trên server: `./storage/server_root`.
@@ -206,8 +206,8 @@ Khi nhận yêu cầu `SEARCH_QUERY`:
 
 ---
 
-## CHƯƠNG 6: KIẾN TRÚC CLIENT GUI & MỞ RỘNG WEB TYPESCRIPT (LLD - THÀNH VIÊN 4)
-*(Phần này do **Thành viên 4** trực tiếp phụ trách và hoàn thiện báo cáo kỹ thuật)*
+## CHƯƠNG 6: KIẾN TRÚC CLIENT GUI & MỞ RỘNG WEB TYPESCRIPT (LLD - HÀ ĐỨC DƯƠNG)
+*(Phần này do **Hà Đức Dương** trực tiếp phụ trách và hoàn thiện báo cáo kỹ thuật)*
 
 ### 6.1 Kiến trúc Đa luồng Client (Qt6 C++)
 Để tránh hiện tượng đóng băng giao diện ("Not Responding") khi truyền tải file lớn:

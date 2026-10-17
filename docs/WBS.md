@@ -16,7 +16,7 @@
 
 ## 2. BẢN PHÂN CÔNG CHI TIẾT VÀ CHECKLIST CHO TỪNG THÀNH VIÊN
 
-### THÀNH VIÊN 1 (M1): KIẾN TRÚC MẠNG CỐT LÕI & GIAO THỨC TỰ TẠO
+### THÀNH VIÊN 1 (M1 - Trần Sỹ Nguyên): KIẾN TRÚC MẠNG CỐT LÕI & GIAO THỨC TỰ TẠO
 > **Trọng tâm:** Tầng Socket C/C++ nguyên thủy, Frame 42-byte, chống dính gói TCP, Event Dispatcher, Đa luồng Server (ThreadPool).
 
 * **Header chịu trách nhiệm:** `include/server/NetworkServer.h`, `include/client/NetworkClient.h`, `include/common/EventDispatcher.h`
@@ -37,7 +37,7 @@
 
 ---
 
-### THÀNH VIÊN 2 (M2): XÁC THỰC NGƯỜI DÙNG, QUẢN LÝ PHIÊN & PHÂN QUYỀN LINUX
+### THÀNH VIÊN 2 (M2 - Bùi Đức Hiếu): XÁC THỰC NGƯỜI DÙNG, QUẢN LÝ PHIÊN & PHÂN QUYỀN LINUX
 > **Trọng tâm:** CSDL/Lưu trữ dữ liệu user, mã hóa Salted SHA-256, Session Token, Thuật toán kiểm tra quyền POSIX 3-tier (Owner-Group-Others) và ACL.
 
 * **Header chịu trách nhiệm:** `include/server/UserManager.h`, `include/server/PermissionEngine.h`
@@ -67,7 +67,7 @@
 
 ---
 
-### THÀNH VIÊN 3 (M3): HỆ THỐNG FILE ẢO, TRUYỀN DỮ LIỆU KHỐI (CHUNKING) & TÌM KIẾM
+### THÀNH VIÊN 3 (M3 - Vũ Nhật Minh Dương): HỆ THỐNG FILE ẢO, TRUYỀN DỮ LIỆU KHỐI (CHUNKING) & TÌM KIẾM
 > **Trọng tâm:** Sandbox lưu trữ, lệnh duyệt file FTP (`ls`, `cd`, `pwd`, `mkdir`, `rm`), truyền file khối 64KB, truyền đệ quy cả thư mục, công cụ tìm kiếm file theo quyền.
 
 * **Header chịu trách nhiệm:** `include/server/VirtualFileSystem.h`, `include/server/TransferManager.h`, `include/server/SearchEngine.h`
@@ -93,7 +93,7 @@
 
 ---
 
-### THÀNH VIÊN 4 (M4): ỨNG DỤNG CLIENT GUI & TÍCH HỢP HỆ THỐNG
+### THÀNH VIÊN 4 (M4 - Hà Đức Dương): ỨNG DỤNG CLIENT GUI & TÍCH HỢP HỆ THỐNG
 > **Trọng tâm:** Xây dựng Desktop GUI (Qt C++), tách biệt UI Thread và Network Thread, bảng tiến trình Progress Bar, tích hợp Client SDK, mở rộng Web Client (TypeScript).
 
 * **Header chịu trách nhiệm:** `include/client/MainWindow.h`, `include/client/TransferWorker.h`
