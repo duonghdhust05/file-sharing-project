@@ -29,13 +29,13 @@ jobs:
           - os: windows-latest
             artifact_name: fsp-windows-x64.zip
             build_cmd: |
-              cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+              cmake -B build -S . -G "Visual Studio 17 2022" -A x64
               cmake --build build --config Release --parallel
-              mkdir package
-              copy build\Release\fsp_server.exe package\
-              copy build\Release\fsp_client_cli.exe package\
-              copy README.md package\
-              powershell Compress-Archive -Path package\* -DestinationPath fsp-windows-x64.zip
+              mkdir -p package
+              cp build/Release/fsp_server.exe package/
+              cp build/Release/fsp_client_cli.exe package/
+              cp README.md package/
+              powershell -Command "Compress-Archive -Path 'package/*' -DestinationPath 'fsp-windows-x64.zip'"
 
     steps:
       - name: Checkout Code
@@ -89,3 +89,4 @@ jobs:
           generate_release_notes: true
           draft: false
           prerelease: false
+

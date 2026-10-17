@@ -76,7 +76,7 @@ jobs:
       - name: Configure CMake (Windows)
         if: runner.os == 'Windows'
         run: |
-          cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          cmake -B build -S . -G "Visual Studio 17 2022" -A x64
 
       - name: Build All Targets (Server, Client CLI, Tests)
         run: |
@@ -96,4 +96,8 @@ jobs:
             build/fsp_server*
             build/fsp_client_cli*
             build/fsp_tests*
+            build/Debug/fsp_server*
+            build/Debug/fsp_client_cli*
+            build/Debug/fsp_tests*
           retention-days: 7
+
