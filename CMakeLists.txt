@@ -25,14 +25,17 @@ include_directories(
 )
 
 # Common Interface Library
-add_library(fsp_common INTERFACE)
-target_include_directories(fsp_common INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_library(fsp_common STATIC
+    src/common/Socket.cpp
+    src/common/PacketHandle.cpp
+)
+target_include_directories(fsp_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # 1. Server Target
 add_executable(fsp_server
     src/server/main.cpp
 )
-target_link_libraries(fsp_server PRIVATE fsp_common ${PLATFORM_NETWORK_LIBS})
+target_link_libraries(fsp_common PUBLIC ${PLATFORM_NETWORK_LIBS})
 
 # 2. Client CLI Target (Dùng cho kiểm thử chức năng không cần GUI)
 add_executable(fsp_client_cli
@@ -69,3 +72,9 @@ message(STATUS "FSP Build System Configured Successfully.")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "Platform Network Libraries: ${PLATFORM_NETWORK_LIBS}")
 message(STATUS "Automated Testing: ENABLED")
+
+add_executable(fsp_network_tests
+    tests/test_network_core.cpp
+)
+target_link_libraries(fsp_network_tests PRIVATE fsp_common)
+add_test(NAME FSP_Network_Core_Tests COMMAND fsp_network_tests)
