@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Compiler Warnings
 if(MSVC)
     add_compile_options(/W4 /permissive-)
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 else()
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -24,21 +25,25 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-# Common Interface Library
-add_library(fsp_common INTERFACE)
-target_include_directories(fsp_common INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# Common Static Library
+add_library(fsp_common STATIC
+    src/common/Socket.cpp
+    src/common/PacketHandler.cpp
+)
+target_include_directories(fsp_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(fsp_common PUBLIC ${PLATFORM_NETWORK_LIBS})
 
 # 1. Server Target
 add_executable(fsp_server
     src/server/main.cpp
 )
-target_link_libraries(fsp_server PRIVATE fsp_common ${PLATFORM_NETWORK_LIBS})
+target_link_libraries(fsp_server PRIVATE fsp_common)
 
-# 2. Client CLI Target (Dùng cho kiểm thử chức năng không cần GUI)
+# 2. Client CLI Target
 add_executable(fsp_client_cli
     src/client_cli/main.cpp
 )
-target_link_libraries(fsp_client_cli PRIVATE fsp_common ${PLATFORM_NETWORK_LIBS})
+target_link_libraries(fsp_client_cli PRIVATE fsp_common)
 
 # 3. Optional: Qt Client GUI
 option(BUILD_QT_GUI "Build Qt-based Graphical Client" OFF)
@@ -52,17 +57,18 @@ if(BUILD_QT_GUI)
     set(CMAKE_AUTORCC ON)
     set(CMAKE_AUTOUIC ON)
 
-    # Thêm target GUI khi đã có mã nguồn Qt
     # add_executable(fsp_client_gui src/client_gui/main.cpp)
     # target_link_libraries(fsp_client_gui PRIVATE fsp_common Qt::Widgets Qt::Network)
 endif()
 
 # 4. Testing Target (CTest Automated Suite)
 enable_testing()
+
+# Test 1: Kiểm thử Giao thức chuẩn & Bitmask POSIX
 add_executable(fsp_tests
     tests/test_protocol.cpp
 )
-target_link_libraries(fsp_tests PRIVATE fsp_common ${PLATFORM_NETWORK_LIBS})
+target_link_libraries(fsp_tests PRIVATE fsp_common)
 add_test(NAME FSP_Protocol_UnitTests COMMAND fsp_tests)
 
 # M2: Auth, Session & Permission
@@ -78,6 +84,13 @@ target_link_libraries(fsp_auth PUBLIC fsp_common)
 add_executable(fsp_auth_tests tests/test_auth_permissions.cpp)
 target_link_libraries(fsp_auth_tests PRIVATE fsp_auth ${PLATFORM_NETWORK_LIBS})
 add_test(NAME FSP_Auth_Permission_Tests COMMAND fsp_auth_tests)
+
+# Test 2: Kiểm thử M1 Tầng Mạng & Probe 1 Sticky Packets
+add_executable(fsp_network_tests
+    tests/test_network_core.cpp
+)
+target_link_libraries(fsp_network_tests PRIVATE fsp_common)
+add_test(NAME FSP_Network_Core_Tests COMMAND fsp_network_tests)
 
 message(STATUS "FSP Build System Configured Successfully.")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
