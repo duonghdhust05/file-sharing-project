@@ -42,19 +42,19 @@
 
 * **Header chịu trách nhiệm:** `include/server/UserManager.h`, `include/server/PermissionEngine.h`
 * **Checklist Nhiệm vụ Chi tiết:**
-  - [ ] **M2.1**: Thiết kế mô hình dữ liệu lưu trữ (SQLite hoặc File-based JSON Database):
+  - [x] **M2.1**: Thiết kế mô hình dữ liệu lưu trữ (SQLite hoặc File-based JSON Database):
     - Quản lý tài khoản: `id`, `username`, `salt`, `password_hash`, `group_id`.
     - Quản lý nhóm và danh sách thành viên trong nhóm.
-  - [ ] **M2.2**: Cài đặt thuật toán băm mật khẩu bảo mật:
+  - [x] **M2.2**: Cài đặt thuật toán băm mật khẩu bảo mật:
     - Sinh Salt ngẫu nhiên 16 bytes.
     - Băm `Password + Salt` bằng SHA-256. Tuyệt đối không lưu plain text.
-  - [ ] **M2.3**: Xây dựng module quản lý phiên làm việc (`SessionManager`):
+  - [x] **M2.3**: Xây dựng module quản lý phiên làm việc (`SessionManager`):
     - Sinh UUID làm `session_token` khi user đăng nhập thành công.
     - Lưu trữ trạng thái phiên: `user_id`, thời điểm hoạt động cuối (last_active), đường dẫn hiện tại (`cwd`).
-  - [ ] **M2.4**: Lập trình bộ xử lý logic sự kiện Auth cho Server:
+  - [x] **M2.4**: Lập trình bộ xử lý logic sự kiện Auth cho Server:
     - Xử lý các sự kiện: `AUTH_REGISTER`, `AUTH_LOGIN`, `AUTH_LOGOUT`.
     - Validate dữ liệu đầu vào (độ dài, ký tự hợp lệ).
-  - [ ] **M2.5**: Xây dựng Bộ máy Phân quyền POSIX/Linux (`PermissionEngine`):
+  - [x] **M2.5**: Xây dựng Bộ máy Phân quyền POSIX/Linux (`PermissionEngine`):
     - Quản lý bitmask 9-bit (`rwxrwxrwx` $\to$ Read, Write, Share).
     - Cài đặt 3 mức độ chia sẻ: `PRIVATE (0)`, `SHARED (1)`, `PUBLIC (2)`.
     - Hàm kiểm tra quyền cốt lõi:
@@ -62,8 +62,8 @@
       bool canAccess(int userId, const std::string& virtualPath, FSP::Permission::AccessType access);
       ```
     - Hàm cập nhật quyền: `chmod` (đổi bitmask), `chown` (đổi người sở hữu).
-  - [ ] **M2.6**: Viết Unit Test độc lập: Kiểm thử ma trận phân quyền (test các trường hợp: file private, file public, user khác nhóm, user cùng nhóm, quyền ghi, quyền đọc).
-  - [ ] **Báo cáo SDD**: Viết Chương 4 (Security, Authentication & Access Control System).
+  - [x] **M2.6**: Viết Unit Test độc lập: Kiểm thử ma trận phân quyền (test các trường hợp: file private, file public, user khác nhóm, user cùng nhóm, quyền ghi, quyền đọc).
+  - [x] **Báo cáo SDD**: Viết Chương 4 (Security, Authentication & Access Control System).
 
 ---
 
