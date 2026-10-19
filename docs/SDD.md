@@ -78,7 +78,13 @@ Hệ thống được thiết kế theo mô hình 3 tầng phân rã rõ rệt:
 *(Phần này do **Trần Sỹ Nguyên** trực tiếp phụ trách và hoàn thiện báo cáo kỹ thuật)*
 
 ### 3.1 Thiết kế Cấu trúc Gói tin (FSP Frame Layout)
-Giao thức FSP sử dụng cơ chế **Length-Prefixed Framing**. Mỗi frame bắt buộc bắt đầu bằng Header cố định 42 bytes:
+Giao thức FSP sử dụng cơ chế **Length-Prefixed Framing**. Mỗi frame bắt buộc bắt đầu bằng Header cố định 42 bytes được bảo vệ bởi `#pragma pack(1)`:
+
+0 1 2 3 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ | Magic (0xAA) | Type (0x01) | Payload Length | +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ | |
+
+                Event Name (32 Bytes)                   +
+
+| | +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ | Checksum (CRC32) | +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ | PAYLOAD DATA | | (Biến thiên: payload_len bytes) | +---------------------------------------------------------------+
 
 | Tên trường | Kiểu dữ liệu | Kích thước | Mô tả |
 | :--- | :--- | :--- | :--- |
@@ -88,30 +94,14 @@ Giao thức FSP sử dụng cơ chế **Length-Prefixed Framing**. Mỗi frame b
 | `event` | `char[32]` | 32 bytes | Tên sự kiện (ví dụ: `AUTH_LOGIN`, `DIR_LIST`) |
 | `checksum` | `uint32_t` | 4 bytes | Mã CRC32 của phần Payload |
 
+### 
 ### 3.2 Giải quyết Triệt để Bài toán Dính gói & Phân mảnh TCP
-* **Bản chất vấn đề**: TCP là luồng byte không có biên giới. Lệnh `send(100)` liên tiếp có thể bị gộp thành 1 lần `recv(200)` (Dính gói), hoặc gói tin 64KB bị xé nhỏ thành nhiều mảnh nhỏ tùy thuộc MTU của mạng (Phân mảnh).
-* **Giải thuật Tiếp nhận Gói tin Chuẩn (Standard Frame Receiver Loop)**:
-```cpp
-// Thuật toán nhận đủ chính xác N bytes từ TCP socket
-bool readExact(int socketFd, void* buffer, size_t totalBytes) {
-    size_t received = 0;
-    char* ptr = static_cast<char*>(buffer);
-    while (received < totalBytes) {
-        int bytes = ::recv(socketFd, ptr + received, totalBytes - received, 0);
-        if (bytes <= 0) return false; // Ngắt kết nối hoặc lỗi
-        received += bytes;
-    }
-    return true;
-}
-```
-* **Quy trình xử lý một Frame hoàn chỉnh**:
-  1. Gọi `readExact(sock, &header, 42)`.
-  2. Kiểm tra `header.magic == 0xAA`. Nếu sai, ngắt kết nối lập tức (bảo vệ bộ đệm).
-  3. Lấy `N = ntohl(header.payload_len)`.
-  4. Cấp phát vùng nhớ nhận payload: `std::vector<char> payload(N)`.
-  5. Gọi `readExact(sock, payload.data(), N)`.
-  6. Kiểm tra `CRC32(payload) == ntohl(header.checksum)`.
-  7. Đưa dữ liệu đã xác thực lên `EventDispatcher`.
+* **Bản chất vấn đề**: TCP là giao thức hướng luồng (byte-stream), không duy trì biên giới gói tin. Khi truyền nhận tốc độ cao, hiện tượng Dính gói (Sticky Packets) hoặc Phân mảnh (Fragmentation) chắc chắn xảy ra.
+* **Giải pháp**: Hiện thực lớp `PacketHandler` với giải thuật vòng lặp `readExact`:
+  1. Đọc chính xác 42 bytes đầu tiên để dựng `FSPHeader`.
+  2. Xác minh `header.magic == 0xAA`. Nếu sai lệch lập tức đóng kết nối (Fail-Closed).
+  3. Đọc đúng `ntohl(header.payload_len)` bytes từ luồng TCP vào buffer.
+  4. Xác minh mã băm IEEE 802.3 CRC32 trước khi đưa lên tầng xử lý nghiệp vụ.
 
 ### 3.3 Kiến trúc Đa luồng Server (Worker ThreadPool)
 * **Main Listener Thread**: Khởi tạo socket, `bind()`, `listen()`, chạy vòng lặp vô tận chỉ làm nhiệm vụ `accept()` kết nối mới.
