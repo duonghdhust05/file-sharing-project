@@ -65,6 +65,20 @@ add_executable(fsp_tests
 target_link_libraries(fsp_tests PRIVATE fsp_common ${PLATFORM_NETWORK_LIBS})
 add_test(NAME FSP_Protocol_UnitTests COMMAND fsp_tests)
 
+# M2: Auth, Session & Permission
+add_library(fsp_auth STATIC
+    src/server/Sha256.cpp
+    src/server/UserManager.cpp
+    src/server/SessionManager.cpp
+    src/server/PermissionEngine.cpp
+    src/server/AuthHandler.cpp
+)
+target_link_libraries(fsp_auth PUBLIC fsp_common)
+
+add_executable(fsp_auth_tests tests/test_auth_permissions.cpp)
+target_link_libraries(fsp_auth_tests PRIVATE fsp_auth ${PLATFORM_NETWORK_LIBS})
+add_test(NAME FSP_Auth_Permission_Tests COMMAND fsp_auth_tests)
+
 message(STATUS "FSP Build System Configured Successfully.")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "Platform Network Libraries: ${PLATFORM_NETWORK_LIBS}")
