@@ -48,7 +48,7 @@
     - Dọn dẹp tài nguyên khi client ngắt kết nối (giải phóng phiên, đóng socket, xóa transfer dở dang).
     - *(Thread pool là COULD khi hoàn thành sớm các mục MUST).*
   - [ ] **M1.5**: Triển khai cơ chế Heartbeat (`PING`/`PONG`) xử lý tự động trong vòng lặp client thread.
-  - [ ] **M1.6**: Viết test CTest Probe 1: chứng minh tách đúng 2 frame trong 1 buffer (dính gói) và ghép đúng frame nhận thành nhiều mảnh.
+  - [x] **M1.6**: Viết test CTest Probe 1: chứng minh tách đúng 2 frame trong 1 buffer (dính gói) và ghép đúng frame nhận thành nhiều mảnh.
   - [x] **M1.7**: Kiểm thử tải đồng thời ≥ 5 client cùng kết nối và truyền nhận dữ liệu ổn định (NFR-3).
 
 ---
