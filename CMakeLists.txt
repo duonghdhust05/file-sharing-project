@@ -37,7 +37,14 @@ target_link_libraries(fsp_server_core PUBLIC fsp_common)
 add_executable(fsp_server src/server/server_main.c)
 target_link_libraries(fsp_server PRIVATE fsp_server_core)
 
-# M4 thêm ở đây: fsp_client_cli (src/client_cli/cli_main.c) và fsp_client_gui (GTK 3)
+# Client SDK (fsp_client_api): Tầng API mạng dùng chung cho CLI và GTK GUI (M4)
+add_library(fsp_client_api STATIC
+    src/client_api/fsp_client_api.c
+)
+target_include_directories(fsp_client_api PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(fsp_client_api PUBLIC fsp_common)
+
+# M4 thêm ứng dụng đầu cuối ở đây: fsp_client_cli (src/client_cli/cli_main.c) và fsp_client_gui (GTK 3)
 
 # ---------------------------------------------------------------------------
 # Kiểm thử CTest
