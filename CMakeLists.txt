@@ -17,20 +17,25 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 find_package(Threads REQUIRED)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# libfsp_common (M1): dùng chung cho server, CLI và GUI
+# libfsp_common (M1 & M2): dùng chung cho server, CLI và GUI
 add_library(fsp_common STATIC
     src/common/fsp_socket.c
     src/common/fsp_packet.c
     src/common/fsp_crc32.c
     src/common/fsp_json.c
+    src/common/fsp_sha256.c
 )
 target_include_directories(fsp_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(fsp_common PUBLIC Threads::Threads)
 
-# Server core (M1): dispatcher + 1 thread / client. M2, M3 thêm file .c của mình vào đây.
+# Server core (M1 & M2): dispatcher + server + auth/user/perm. M3 thêm file .c vào đây.
 add_library(fsp_server_core STATIC
     src/server/fsp_dispatcher.c
     src/server/fsp_server.c
+    src/server/fsp_user.c
+    src/server/fsp_session.c
+    src/server/fsp_perm.c
+    src/server/fsp_auth_handler.c
 )
 target_link_libraries(fsp_server_core PUBLIC fsp_common)
 
@@ -62,6 +67,10 @@ add_test(NAME FSP_Probe1_Packet COMMAND fsp_test_packet)
 add_executable(fsp_test_json tests/test_json.c)
 target_link_libraries(fsp_test_json PRIVATE fsp_common)
 add_test(NAME FSP_Json COMMAND fsp_test_json)
+
+add_executable(fsp_test_auth_permissions tests/test_auth_permissions.c)
+target_link_libraries(fsp_test_auth_permissions PRIVATE fsp_server_core)
+add_test(NAME FSP_M2_Auth_Permissions COMMAND fsp_test_auth_permissions)
 
 add_executable(fsp_test_network_core tests/test_network_core.c)
 target_link_libraries(fsp_test_network_core PRIVATE fsp_server_core)

@@ -10,8 +10,12 @@
 
 #include "common/Config.h"
 #include "common/FSPProtocol.h"
+#include "server/fsp_auth_handler.h"
 #include "server/fsp_dispatcher.h"
+#include "server/fsp_perm.h"
 #include "server/fsp_server.h"
+#include "server/fsp_session.h"
+#include "server/fsp_user.h"
 
 static fsp_server_t *g_server = NULL;
 
@@ -40,7 +44,12 @@ static int parse_port(const char *text, uint16_t *out) {
  *       dispatcher_register_cleanup(transfer_on_disconnect);   // xóa file .part dở
  * Sự kiện chưa có handler sẽ tự nhận ERROR_RESP 400 "unknown event".
  */
-static void register_handlers(void) {}
+static void register_handlers(void) {
+    fsp_user_db_init("storage/users.json");
+    fsp_session_init();
+    fsp_perm_db_init("storage/permissions.json");
+    fsp_auth_register_handlers();
+}
 
 int main(int argc, char **argv) {
     uint16_t port = (uint16_t)FSP_SERVER_PORT;
@@ -80,6 +89,9 @@ int main(int argc, char **argv) {
     fsp_server_run(g_server);
     fsp_server_destroy(g_server);
     g_server = NULL;
+    fsp_session_destroy_all();
+    fsp_user_db_destroy();
+    fsp_perm_db_destroy();
     printf("Server stopped.\n");
     return 0;
 }

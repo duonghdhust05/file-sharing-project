@@ -99,3 +99,6 @@ web/*.tsbuildinfo
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Local files
+local
