@@ -134,43 +134,46 @@ static int test_permissions(void) {
     fsp_user_db_init(user_db);
     fsp_perm_db_init(perm_db);
 
-    uint32_t admin_id = 0, an_id = 0, binh_id = 0;
-    fsp_user_register("admin", "password123", "Admin", &admin_id);
-    fsp_user_register("an", "password123", "An", &an_id);
-    fsp_user_register("binh", "password123", "Binh", &binh_id);
+    uint32_t admin_id = 0, alice_id = 0, binh_id = 0;
+    CHECK(fsp_user_register("admin", "password123", "Admin", &admin_id) == (int)FSP_STATUS_CREATED,
+          "Register admin");
+    CHECK(fsp_user_register("alice", "password123", "Alice", &alice_id) == (int)FSP_STATUS_CREATED,
+          "Register alice");
+    CHECK(fsp_user_register("binh", "password123", "Binh", &binh_id) == (int)FSP_STATUS_CREATED,
+          "Register binh");
 
     /* Bước 0: Đường dẫn chưa đăng ký -> fail-closed DENY */
-    CHECK(fsp_can_access(an_id, "/untracked/file.txt", FSP_ACCESS_READ) == false,
+    CHECK(fsp_can_access(alice_id, "/untracked/file.txt", FSP_ACCESS_READ) == false,
           "Untracked path denied (Step 0)");
 
-    /* Đăng ký /home/an/secret.zip: level PRIVATE, perm 0666 */
-    CHECK(fsp_perm_register("/home/an/secret.zip", an_id, 0666, FSP_LEVEL_PRIVATE) ==
+    /* Đăng ký /home/alice/secret.zip: level PRIVATE, perm 0666 */
+    CHECK(fsp_perm_register("/home/alice/secret.zip", alice_id, 0666, FSP_LEVEL_PRIVATE) ==
               (int)FSP_STATUS_CREATED,
           "Register secret.zip");
 
     /* Bước 1: Admin toàn quyền */
-    CHECK(fsp_can_access(admin_id, "/home/an/secret.zip", FSP_ACCESS_READ) == true,
+    CHECK(fsp_can_access(admin_id, "/home/alice/secret.zip", FSP_ACCESS_READ) == true,
           "Admin allowed READ (Step 1)");
-    CHECK(fsp_can_access(admin_id, "/home/an/secret.zip", FSP_ACCESS_WRITE) == true,
+    CHECK(fsp_can_access(admin_id, "/home/alice/secret.zip", FSP_ACCESS_WRITE) == true,
           "Admin allowed WRITE (Step 1)");
 
-    /* Bước 2: Chủ sở hữu An có quyền READ và SHARE */
-    CHECK(fsp_can_access(an_id, "/home/an/secret.zip", FSP_ACCESS_READ) == true,
+    /* Bước 2: Chủ sở hữu Alice có quyền READ và SHARE */
+    CHECK(fsp_can_access(alice_id, "/home/alice/secret.zip", FSP_ACCESS_READ) == true,
           "Owner allowed READ (Step 2)");
-    CHECK(fsp_can_access(an_id, "/home/an/secret.zip", FSP_ACCESS_SHARE) == true,
+    CHECK(fsp_can_access(alice_id, "/home/alice/secret.zip", FSP_ACCESS_SHARE) == true,
           "Owner allowed SHARE (Step 2)");
-    /* Vì bit 0666 có bit 0200 nên An có quyền WRITE */
-    CHECK(fsp_can_access(an_id, "/home/an/secret.zip", FSP_ACCESS_WRITE) == true,
+    /* Vì bit 0666 có bit 0200 nên Alice có quyền WRITE */
+    CHECK(fsp_can_access(alice_id, "/home/alice/secret.zip", FSP_ACCESS_WRITE) == true,
           "Owner allowed WRITE with bit 0200");
 
     /* Bước 3 (PROBE 3): Mức PRIVATE từ chối BÌNH mặc dù perm là 0666! */
-    CHECK(fsp_can_access(binh_id, "/home/an/secret.zip", FSP_ACCESS_READ) == false,
+    CHECK(fsp_can_access(binh_id, "/home/alice/secret.zip", FSP_ACCESS_READ) == false,
           "PROBE 3: PRIVATE blocks outsider even with 0666 bit");
-    CHECK(fsp_can_access(binh_id, "/home/an/secret.zip", FSP_ACCESS_WRITE) == false,
+    CHECK(fsp_can_access(binh_id, "/home/alice/secret.zip", FSP_ACCESS_WRITE) == false,
           "PROBE 3: PRIVATE blocks outsider write");
 
     /* Bước 6: PUBLIC level cho phép người khác ĐỌC */
-    CHECK(fsp_perm_register("/public/readme.txt", an_id, 0644, FSP_LEVEL_PUBLIC) ==
+    CHECK(fsp_perm_register("/public/readme.txt", alice_id, 0644, FSP_LEVEL_PUBLIC) ==
               (int)FSP_STATUS_CREATED,
           "Register public file");
     CHECK(fsp_can_access(binh_id, "/public/readme.txt", FSP_ACCESS_READ) == true,
@@ -179,25 +182,25 @@ static int test_permissions(void) {
           "PUBLIC file denies outsider WRITE (Step 6)");
 
     /* Bước 7: SHARED level kèm danh sách ACL */
-    CHECK(fsp_perm_register("/home/an/project.doc", an_id, 0644, FSP_LEVEL_SHARED) ==
+    CHECK(fsp_perm_register("/home/alice/project.doc", alice_id, 0644, FSP_LEVEL_SHARED) ==
               (int)FSP_STATUS_CREATED,
           "Register shared file");
-    CHECK(fsp_can_access(binh_id, "/home/an/project.doc", FSP_ACCESS_READ) == false,
+    CHECK(fsp_can_access(binh_id, "/home/alice/project.doc", FSP_ACCESS_READ) == false,
           "SHARED file denies before ACL grant");
 
     /* Cấp quyền READ cho Bình */
-    CHECK(fsp_perm_grant(an_id, "/home/an/project.doc", binh_id, FSP_ACCESS_READ) ==
+    CHECK(fsp_perm_grant(alice_id, "/home/alice/project.doc", binh_id, FSP_ACCESS_READ) ==
               (int)FSP_STATUS_OK,
           "Grant read to Binh");
-    CHECK(fsp_can_access(binh_id, "/home/an/project.doc", FSP_ACCESS_READ) == true,
+    CHECK(fsp_can_access(binh_id, "/home/alice/project.doc", FSP_ACCESS_READ) == true,
           "SHARED file allows Binh after grant (Step 7)");
-    CHECK(fsp_can_access(binh_id, "/home/an/project.doc", FSP_ACCESS_WRITE) == false,
+    CHECK(fsp_can_access(binh_id, "/home/alice/project.doc", FSP_ACCESS_WRITE) == false,
           "SHARED file denies ungranted write");
 
     /* Thu hồi quyền */
-    CHECK(fsp_perm_revoke(an_id, "/home/an/project.doc", binh_id) == (int)FSP_STATUS_OK,
+    CHECK(fsp_perm_revoke(alice_id, "/home/alice/project.doc", binh_id) == (int)FSP_STATUS_OK,
           "Revoke Binh");
-    CHECK(fsp_can_access(binh_id, "/home/an/project.doc", FSP_ACCESS_READ) == false,
+    CHECK(fsp_can_access(binh_id, "/home/alice/project.doc", FSP_ACCESS_READ) == false,
           "SHARED file denies Binh after revoke");
 
     fsp_perm_db_destroy();
@@ -222,30 +225,33 @@ static int test_recursive_perms(void) {
     fsp_user_db_init(user_db);
     fsp_perm_db_init(perm_db);
 
-    uint32_t an_id = 0, binh_id = 0;
-    fsp_user_register("an", "pass123", "An", &an_id);
-    fsp_user_register("binh", "pass123", "Binh", &binh_id);
+    uint32_t alice_id = 0, binh_id = 0;
+    CHECK(fsp_user_register("alice", "pass123", "Alice", &alice_id) == (int)FSP_STATUS_CREATED,
+          "Register alice");
+    CHECK(fsp_user_register("binh", "pass123", "Binh", &binh_id) == (int)FSP_STATUS_CREATED,
+          "Register binh");
 
-    fsp_perm_register("/home/an/folder", an_id, 0755, FSP_LEVEL_PRIVATE);
-    fsp_perm_register("/home/an/folder/sub1.txt", an_id, 0644, FSP_LEVEL_PRIVATE);
-    fsp_perm_register("/home/an/folder/sub2.txt", an_id, 0644, FSP_LEVEL_PRIVATE);
-    fsp_perm_register("/home/an/folder-other.txt", an_id, 0644, FSP_LEVEL_PRIVATE);
+    fsp_perm_register("/home/alice/folder", alice_id, 0755, FSP_LEVEL_PRIVATE);
+    fsp_perm_register("/home/alice/folder/sub1.txt", alice_id, 0644, FSP_LEVEL_PRIVATE);
+    fsp_perm_register("/home/alice/folder/sub2.txt", alice_id, 0644, FSP_LEVEL_PRIVATE);
+    fsp_perm_register("/home/alice/folder-other.txt", alice_id, 0644, FSP_LEVEL_PRIVATE);
 
-    /* Đổi quyền đệ quy /home/an/folder sang PUBLIC */
-    CHECK(fsp_perm_set_recursive(an_id, "/home/an/folder", 0755, FSP_LEVEL_PUBLIC, true) ==
+    /* Đổi quyền đệ quy /home/alice/folder sang PUBLIC */
+    CHECK(fsp_perm_set_recursive(alice_id, "/home/alice/folder", 0755, FSP_LEVEL_PUBLIC, true) ==
               (int)FSP_STATUS_OK,
           "Recursive perm_set to PUBLIC");
 
     /* Thư mục gốc và các con bên dưới phải thành PUBLIC */
-    CHECK(fsp_can_access(binh_id, "/home/an/folder", FSP_ACCESS_READ) == true,
+    CHECK(fsp_can_access(binh_id, "/home/alice/folder", FSP_ACCESS_READ) == true,
           "Folder is now public");
-    CHECK(fsp_can_access(binh_id, "/home/an/folder/sub1.txt", FSP_ACCESS_READ) == true,
+    CHECK(fsp_can_access(binh_id, "/home/alice/folder/sub1.txt", FSP_ACCESS_READ) == true,
           "Child 1 is now public");
-    CHECK(fsp_can_access(binh_id, "/home/an/folder/sub2.txt", FSP_ACCESS_READ) == true,
+    CHECK(fsp_can_access(binh_id, "/home/alice/folder/sub2.txt", FSP_ACCESS_READ) == true,
           "Child 2 is now public");
 
-    /* Tệp cùng tiền tố text nhưng KHÔNG PHẢI con (/home/an/folder-other.txt) không bị ảnh hưởng */
-    CHECK(fsp_can_access(binh_id, "/home/an/folder-other.txt", FSP_ACCESS_READ) == false,
+    /* Tệp cùng tiền tố text nhưng KHÔNG PHẢI con (/home/alice/folder-other.txt) không bị ảnh hưởng
+     */
+    CHECK(fsp_can_access(binh_id, "/home/alice/folder-other.txt", FSP_ACCESS_READ) == false,
           "Sibling prefix unaffected");
 
     fsp_perm_db_destroy();
