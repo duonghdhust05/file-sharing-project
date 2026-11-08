@@ -1,6 +1,7 @@
 #ifndef FSP_CONFIG_H
 #define FSP_CONFIG_H
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 
@@ -10,7 +11,11 @@ namespace Config {
 // Network defaults
 constexpr uint16_t SERVER_PORT = 8088;
 constexpr int BACKLOG = 64;
-constexpr int THREAD_POOL_SIZE = 16;
+// Mỗi worker phục vụ trọn vẹn 1 kết nối (thread-per-connection lấy từ pool) -> số worker chính
+// là số client được phục vụ đồng thời. NFR-03 yêu cầu tối thiểu 50 clients.
+constexpr int THREAD_POOL_SIZE = 64;
+// Số kết nối đã accept nhưng đang chờ worker rảnh. Vượt quá -> từ chối (Fail-Closed).
+constexpr int MAX_PENDING_CONNECTIONS = 128;
 constexpr int BUFFER_SIZE = 128 * 1024;  // 128 KB buffer
 constexpr int SOCKET_TIMEOUT_S = 30;
 
@@ -37,24 +42,28 @@ public:
     }
 
 private:
-    static const uint32_t* getTable() {
-        static uint32_t table[256];
-        static bool initialized = false;
-        if (!initialized) {
+    struct Table {
+        uint32_t entries[256];
+        Table() {
             for (uint32_t i = 0; i < 256; ++i) {
                 uint32_t c = i;
                 for (size_t j = 0; j < 8; ++j) {
                     if (c & 1) {
-                        c = 0xEDB88320L ^ (c >> 1);
+                        c = 0xEDB88320u ^ (c >> 1);
                     } else {
                         c = c >> 1;
                     }
                 }
-                table[i] = c;
+                entries[i] = c;
             }
-            initialized = true;
         }
-        return table;
+    };
+
+    static const uint32_t* getTable() {
+        // C++11 "magic static": khởi tạo đúng một lần và thread-safe, nhiều worker thread
+        // có thể gọi CRC32::calculate() đồng thời mà không bị data race.
+        static const Table table;
+        return table.entries;
     }
 };
 

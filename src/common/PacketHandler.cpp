@@ -1,5 +1,6 @@
 #include "common/PacketHandler.h"
 
+#include <chrono>
 #include <cstring>
 #include <iostream>
 
@@ -12,6 +13,21 @@
 #endif
 
 namespace FSP {
+
+namespace {
+bool isKnownMessageType(uint8_t type) {
+    return type >= static_cast<uint8_t>(MessageType::EVENT_REQ) &&
+           type <= static_cast<uint8_t>(MessageType::PONG);
+}
+
+bool hasNullTerminator(const char (&event)[EVENT_NAME_MAX_LEN]) {
+    return std::memchr(event, '\0', EVENT_NAME_MAX_LEN) != nullptr;
+}
+}  // namespace
+
+uint32_t PacketHandler::maxPayloadSize() {
+    return static_cast<uint32_t>(Config::BUFFER_SIZE);
+}
 
 bool PacketHandler::readExact(Socket& socket, void* buffer, size_t totalBytes) {
     if (!socket.isValid() || !buffer || totalBytes == 0)
@@ -27,6 +43,42 @@ bool PacketHandler::readExact(Socket& socket, void* buffer, size_t totalBytes) {
             return false;
         }
         received += static_cast<size_t>(bytes);
+    }
+    return true;
+}
+
+bool PacketHandler::readExact(Socket& socket, void* buffer, size_t totalBytes,
+                              const RecvControl& control) {
+    if (!control.abortFlag && control.idleTimeoutMs <= 0)
+        return readExact(socket, buffer, totalBytes);
+    if (!socket.isValid() || !buffer || totalBytes == 0)
+        return false;
+
+    using Clock = std::chrono::steady_clock;
+    size_t received = 0;
+    char* ptr = static_cast<char*>(buffer);
+    auto lastActivity = Clock::now();
+
+    while (received < totalBytes) {
+        // Chờ có dữ liệu theo từng lát ABORT_POLL_MS để kịp phản ứng với yêu cầu dừng.
+        for (;;) {
+            if (control.abortFlag && control.abortFlag->load())
+                return false;
+            int ready = socket.waitReadable(ABORT_POLL_MS);
+            if (ready < 0)
+                return false;
+            if (ready > 0)
+                break;
+            if (control.idleTimeoutMs > 0 &&
+                Clock::now() - lastActivity >= std::chrono::milliseconds(control.idleTimeoutMs))
+                return false;
+        }
+        int bytes = socket.recv(ptr + received, totalBytes - received);
+        if (bytes <= 0) {
+            return false;  // Peer đóng (0) hoặc lỗi -> Fail-Closed
+        }
+        received += static_cast<size_t>(bytes);
+        lastActivity = Clock::now();
     }
     return true;
 }
@@ -50,25 +102,30 @@ bool PacketHandler::sendExact(Socket& socket, const void* buffer, size_t totalBy
 
 std::vector<uint8_t> PacketHandler::packFrame(MessageType type, const std::string& eventName,
                                               const void* payloadData, size_t payloadLen) {
+    if (!payloadData)
+        payloadLen = 0;
     std::vector<uint8_t> frame(HEADER_SIZE + payloadLen);
 
-    FSPHeader* header = reinterpret_cast<FSPHeader*>(frame.data());
-    header->magic = MAGIC_BYTE;
-    header->type = static_cast<uint8_t>(type);
-    header->payload_len = htonl(static_cast<uint32_t>(payloadLen));
+    // Dựng header trên stack rồi memcpy vào buffer: tránh truy cập không căn lề qua con trỏ ép
+    // kiểu.
+    FSPHeader header{};
+    header.magic = MAGIC_BYTE;
+    header.type = static_cast<uint8_t>(type);
+    header.payload_len = htonl(static_cast<uint32_t>(payloadLen));
 
-    // Điền event name (tối đa 32 bytes kèm null-terminator)
-    std::memset(header->event, 0, EVENT_NAME_MAX_LEN);
-    std::strncpy(header->event, eventName.c_str(), EVENT_NAME_MAX_LEN - 1);
+    // Điền event name (tối đa 31 ký tự + null-terminator)
+    std::strncpy(header.event, eventName.c_str(), EVENT_NAME_MAX_LEN - 1);
+    header.event[EVENT_NAME_MAX_LEN - 1] = '\0';
 
     // Tính checksum CRC32 của payload
     uint32_t crc = 0;
-    if (payloadData && payloadLen > 0) {
+    if (payloadLen > 0) {
         crc = CRC32::calculate(payloadData, payloadLen);
         std::memcpy(frame.data() + HEADER_SIZE, payloadData, payloadLen);
     }
-    header->checksum = htonl(crc);
+    header.checksum = htonl(crc);
 
+    std::memcpy(frame.data(), &header, HEADER_SIZE);
     return frame;
 }
 
@@ -77,34 +134,50 @@ std::vector<uint8_t> PacketHandler::packFrame(MessageType type, const std::strin
     return packFrame(type, eventName, jsonPayload.data(), jsonPayload.size());
 }
 
-bool PacketHandler::unpackFrame(Socket& socket, FSPHeader& outHeader,
-                                std::vector<uint8_t>& outPayload) {
-    // Bước 1: Đọc đủ chính xác 42 bytes header
-    if (!readExact(socket, &outHeader, HEADER_SIZE)) {
-        return false;
-    }
-
-    // Bước 2: Kiểm tra magic byte
-    if (outHeader.magic != MAGIC_BYTE) {
+bool PacketHandler::validateHeader(const FSPHeader& header, uint32_t& outPayloadLen) {
+    if (header.magic != MAGIC_BYTE) {
         std::cerr << "[PacketHandler] Malformed frame: invalid magic byte 0x" << std::hex
-                  << static_cast<int>(outHeader.magic) << std::dec << "\n";
+                  << static_cast<int>(header.magic) << std::dec << "\n";
         return false;
     }
-
-    // Bước 3: Chuyển đổi Endianness và kiểm tra kích thước payload
-    uint32_t payloadLen = ntohl(outHeader.payload_len);
-    uint32_t expectedChecksum = ntohl(outHeader.checksum);
-
-    if (payloadLen > static_cast<uint32_t>(Config::BUFFER_SIZE)) {
+    if (!isKnownMessageType(header.type)) {
+        std::cerr << "[PacketHandler] Malformed frame: unknown message type "
+                  << static_cast<int>(header.type) << "\n";
+        return false;
+    }
+    if (!hasNullTerminator(header.event)) {
+        // Nếu không chặn, std::string(header.event) sẽ đọc tràn ra ngoài 32 bytes.
+        std::cerr << "[PacketHandler] Malformed frame: event name is not null-terminated\n";
+        return false;
+    }
+    uint32_t payloadLen = ntohl(header.payload_len);
+    if (payloadLen > maxPayloadSize()) {
         std::cerr << "[PacketHandler] Payload size exceeds buffer limits: " << payloadLen << "\n";
         return false;
     }
+    outPayloadLen = payloadLen;
+    return true;
+}
+
+bool PacketHandler::unpackFrame(Socket& socket, FSPHeader& outHeader,
+                                std::vector<uint8_t>& outPayload, const RecvControl& control) {
+    // Bước 1: Đọc đủ chính xác 42 bytes header
+    if (!readExact(socket, &outHeader, HEADER_SIZE, control)) {
+        return false;
+    }
+
+    // Bước 2 + 3: Kiểm tra magic byte, type, event name, giới hạn kích thước payload
+    uint32_t payloadLen = 0;
+    if (!validateHeader(outHeader, payloadLen)) {
+        return false;
+    }
+    uint32_t expectedChecksum = ntohl(outHeader.checksum);
 
     outPayload.clear();
     if (payloadLen > 0) {
         outPayload.resize(payloadLen);
         // Bước 4: Đọc đủ chính xác payloadLen bytes
-        if (!readExact(socket, outPayload.data(), payloadLen)) {
+        if (!readExact(socket, outPayload.data(), payloadLen, control)) {
             return false;
         }
 
@@ -115,6 +188,9 @@ bool PacketHandler::unpackFrame(Socket& socket, FSPHeader& outHeader,
                       << ", Actual: " << computedChecksum << "\n";
             return false;
         }
+    } else if (expectedChecksum != 0) {
+        std::cerr << "[PacketHandler] Empty payload must carry checksum 0\n";
+        return false;
     }
 
     return true;
@@ -122,20 +198,19 @@ bool PacketHandler::unpackFrame(Socket& socket, FSPHeader& outHeader,
 
 bool PacketHandler::unpackFromBuffer(const std::vector<uint8_t>& buffer, size_t& offset,
                                      FSPHeader& outHeader, std::vector<uint8_t>& outPayload) {
-    if (offset + HEADER_SIZE > buffer.size()) {
+    if (offset > buffer.size() || buffer.size() - offset < HEADER_SIZE) {
         return false;
     }
 
     // Đọc header
     std::memcpy(&outHeader, buffer.data() + offset, HEADER_SIZE);
-    if (outHeader.magic != MAGIC_BYTE) {
+    uint32_t payloadLen = 0;
+    if (!validateHeader(outHeader, payloadLen)) {
         return false;
     }
-
-    uint32_t payloadLen = ntohl(outHeader.payload_len);
     uint32_t expectedChecksum = ntohl(outHeader.checksum);
 
-    if (offset + HEADER_SIZE + payloadLen > buffer.size()) {
+    if (buffer.size() - offset - HEADER_SIZE < payloadLen) {
         return false;  // Buffer chưa đủ payload (phân mảnh)
     }
 
@@ -148,10 +223,42 @@ bool PacketHandler::unpackFromBuffer(const std::vector<uint8_t>& buffer, size_t&
         if (computed != expectedChecksum) {
             return false;
         }
+    } else if (expectedChecksum != 0) {
+        return false;
     }
 
     // Tịnh tiến offset qua hết frame này để sẵn sàng bóc frame kế tiếp
     offset += (HEADER_SIZE + payloadLen);
+    return true;
+}
+
+bool PacketHandler::sendPacket(Socket& socket, MessageType type, const std::string& eventName,
+                               const void* payloadData, size_t payloadLen) {
+    if (eventName.size() >= EVENT_NAME_MAX_LEN) {
+        std::cerr << "[PacketHandler] Event name too long (max 31 chars): " << eventName << "\n";
+        return false;
+    }
+    if (payloadLen > maxPayloadSize() || (payloadLen > 0 && !payloadData)) {
+        std::cerr << "[PacketHandler] Refusing to send invalid payload of " << payloadLen
+                  << " bytes\n";
+        return false;
+    }
+    std::vector<uint8_t> frame = packFrame(type, eventName, payloadData, payloadLen);
+    return sendExact(socket, frame.data(), frame.size());
+}
+
+bool PacketHandler::sendPacket(Socket& socket, MessageType type, const std::string& eventName,
+                               const std::string& jsonPayload) {
+    return sendPacket(socket, type, eventName, jsonPayload.data(), jsonPayload.size());
+}
+
+bool PacketHandler::recvPacket(Socket& socket, Packet& outPacket, const RecvControl& control) {
+    FSPHeader header{};
+    if (!unpackFrame(socket, header, outPacket.payload, control)) {
+        return false;
+    }
+    outPacket.type = static_cast<MessageType>(header.type);
+    outPacket.event = std::string(header.event);  // An toàn: validateHeader đã kiểm tra '\0'
     return true;
 }
 

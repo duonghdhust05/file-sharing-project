@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <iostream>
@@ -117,6 +118,98 @@ int testCorruptedFrameProbe() {
     return 0;
 }
 
+// Test 4: Header bị làm giả -> phải từ chối trước khi cấp phát hay đọc tràn bộ nhớ
+int testMalformedHeaderProbe() {
+    std::cout << "[TEST] Running Malformed Header Detection...\n";
+    std::string testJson = "{\"k\":\"v\"}";
+    auto frame = FSP::PacketHandler::packFrame(FSP::MessageType::EVENT_REQ, "TEST_EVENT", testJson);
+    FSP::FSPHeader hdr;
+    std::vector<uint8_t> p;
+
+    // Case A: event name lấp đầy 32 bytes, không có '\0' -> std::string(hdr.event) sẽ đọc tràn
+    auto noTerminator = frame;
+    std::memset(noTerminator.data() + 6, 'A', FSP::EVENT_NAME_MAX_LEN);
+    size_t offset = 0;
+    TEST_ASSERT(!FSP::PacketHandler::unpackFromBuffer(noTerminator, offset, hdr, p),
+                "Must REJECT event name without null terminator");
+    TEST_ASSERT(offset == 0, "Offset must not move on rejected frame");
+
+    // Case B: type không thuộc MessageType
+    auto badType = frame;
+    badType[1] = 0x7F;
+    offset = 0;
+    TEST_ASSERT(!FSP::PacketHandler::unpackFromBuffer(badType, offset, hdr, p),
+                "Must REJECT unknown message type");
+
+    // Case C: payload_len khổng lồ (2 GB) -> từ chối, không resize vector 2 GB
+    auto huge = frame;
+    uint32_t hugeLen = htonl(0x7FFFFFFFu);
+    std::memcpy(huge.data() + 2, &hugeLen, sizeof(hugeLen));
+    offset = 0;
+    TEST_ASSERT(!FSP::PacketHandler::unpackFromBuffer(huge, offset, hdr, p),
+                "Must REJECT payload_len above maxPayloadSize()");
+
+    // Case D: payload rỗng nhưng checksum khác 0
+    auto empty = FSP::PacketHandler::packFrame(FSP::MessageType::PING, "PING", nullptr, 0);
+    TEST_ASSERT(empty.size() == FSP::HEADER_SIZE, "Empty frame must be exactly 42 bytes");
+    empty[FSP::HEADER_SIZE - 1] = 0x01;
+    offset = 0;
+    TEST_ASSERT(!FSP::PacketHandler::unpackFromBuffer(empty, offset, hdr, p),
+                "Must REJECT empty payload with non-zero checksum");
+
+    std::cout << "  -> PASSED: Malformed headers rejected (fail-closed).\n";
+    return 0;
+}
+
+// Test 5: Frame bị phân mảnh -> chưa đủ byte thì chưa bóc, đủ byte thì bóc chính xác
+int testFragmentedBuffer() {
+    std::cout << "[TEST] Running Fragmented Frame Reassembly...\n";
+    std::string payload(1000, 'x');
+    payload[0] = '{';
+    auto frame = FSP::PacketHandler::packFrame(FSP::MessageType::EVENT_REQ, "BIG", payload);
+    FSP::FSPHeader hdr;
+    std::vector<uint8_t> p;
+
+    std::vector<uint8_t> partial;
+    // Nạp từng mảnh 7 byte, chỉ được bóc thành công khi mảnh cuối cùng tới
+    for (size_t i = 0; i < frame.size(); i += 7) {
+        size_t end = std::min(frame.size(), i + 7);
+        partial.insert(partial.end(), frame.begin() + i, frame.begin() + end);
+        size_t offset = 0;
+        bool ok = FSP::PacketHandler::unpackFromBuffer(partial, offset, hdr, p);
+        if (partial.size() < frame.size()) {
+            TEST_ASSERT(!ok, "Must not extract an incomplete frame");
+            TEST_ASSERT(offset == 0, "Offset must stay at 0 for incomplete frame");
+        } else {
+            TEST_ASSERT(ok, "Must extract the frame once all bytes arrived");
+            TEST_ASSERT(offset == frame.size(), "Offset must land exactly at end of frame");
+            TEST_ASSERT(std::string(p.begin(), p.end()) == payload, "Payload must be intact");
+        }
+    }
+    std::cout << "  -> PASSED: Fragmented frame reassembled only when complete.\n";
+    return 0;
+}
+
+// Test 6: sendPacket từ chối dữ liệu vi phạm hợp đồng trước khi đẩy lên mạng
+int testSendPacketGuards() {
+    std::cout << "[TEST] Running sendPacket contract guards...\n";
+    FSP::Socket unconnected;
+    std::string longName(FSP::EVENT_NAME_MAX_LEN, 'E');  // 32 ký tự -> không còn chỗ cho '\0'
+    TEST_ASSERT(
+        !FSP::PacketHandler::sendPacket(unconnected, FSP::MessageType::EVENT_REQ, longName, "{}"),
+        "Must refuse event names of 32+ chars");
+    std::vector<uint8_t> tooBig(FSP::PacketHandler::maxPayloadSize() + 1, 0);
+    TEST_ASSERT(!FSP::PacketHandler::sendPacket(unconnected, FSP::MessageType::FILE_CHUNK, "CHUNK",
+                                                tooBig.data(), tooBig.size()),
+                "Must refuse payload above maxPayloadSize()");
+    // Một FILE_CHUNK đầy đủ (88B header + 64KB data) phải nằm trong giới hạn
+    TEST_ASSERT(sizeof(FSP::FileChunkHeader) + FSP::DEFAULT_CHUNK_SIZE <=
+                    FSP::PacketHandler::maxPayloadSize(),
+                "A full 64KB FILE_CHUNK must fit in maxPayloadSize()");
+    std::cout << "  -> PASSED: sendPacket guards enforced.\n";
+    return 0;
+}
+
 int main() {
     std::cout << "====================================================\n";
     std::cout << "   M1 CORE NETWORK ENGINE TESTS (Adversarial Suite) \n";
@@ -128,9 +221,15 @@ int main() {
         return 1;
     if (testCorruptedFrameProbe() != 0)
         return 1;
+    if (testMalformedHeaderProbe() != 0)
+        return 1;
+    if (testFragmentedBuffer() != 0)
+        return 1;
+    if (testSendPacketGuards() != 0)
+        return 1;
 
     std::cout << "====================================================\n";
-    std::cout << "  ALL M1 NETWORK TESTS PASSED SUCCESSFULLY! (3/3)   \n";
+    std::cout << "  ALL M1 NETWORK TESTS PASSED SUCCESSFULLY! (6/6)   \n";
     std::cout << "====================================================\n";
     return 0;
 }
