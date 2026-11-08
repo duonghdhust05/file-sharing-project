@@ -104,8 +104,7 @@ static int test_sessions(void) {
     CHECK(strcmp(sess.username, "bob") == 0, "Session username matches");
 
     /* Token giả mạo -> từ chối (Probe 2) */
-    CHECK(fsp_session_validate("tok_forged_hacker_99", NULL) != 0,
-          "Reject forged token (Probe 2)");
+    CHECK(fsp_session_validate("tok_forged_hacker_99", NULL) != 0, "Reject forged token (Probe 2)");
 
     /* Cập nhật thư mục CWD */
     CHECK(fsp_session_set_cwd(tok, "/home/bob/docs") == 0, "Set CWD");

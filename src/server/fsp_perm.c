@@ -95,8 +95,8 @@ static int save_db_locked(void) {
         fprintf(f,
                 "{\"path\":\"%s\",\"owner_id\":%u,\"group_id\":%u,\"perm_bits\":%u,\"sharing_"
                 "level\":%d,\"acl\":\"%s\"}\n",
-                p_esc, m->owner_id, m->group_id, (unsigned int)m->perm_bits,
-                (int)m->sharing_level, acl_str);
+                p_esc, m->owner_id, m->group_id, (unsigned int)m->perm_bits, (int)m->sharing_level,
+                acl_str);
     }
 
     if (fflush(f) != 0) {

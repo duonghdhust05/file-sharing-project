@@ -18,10 +18,8 @@ static int handle_auth_register(client_ctx_t *ctx, const fsp_frame_t *req) {
     }
 
     char username[64] = {0}, password[128] = {0}, full_name[128] = {0};
-    if (fsp_json_get_str((const char *)req->payload, "username", username, sizeof(username)) !=
-            0 ||
-        fsp_json_get_str((const char *)req->payload, "password", password, sizeof(password)) !=
-            0) {
+    if (fsp_json_get_str((const char *)req->payload, "username", username, sizeof(username)) != 0 ||
+        fsp_json_get_str((const char *)req->payload, "password", password, sizeof(password)) != 0) {
         return fsp_send_error(ctx->fd, req->event, (int)FSP_STATUS_BAD_REQUEST,
                               "Thieu username hoac password");
     }
@@ -31,8 +29,8 @@ static int handle_auth_register(client_ctx_t *ctx, const fsp_frame_t *req) {
     uint32_t user_id = 0;
     int rc = fsp_user_register(username, password, full_name[0] ? full_name : NULL, &user_id);
     if (rc != (int)FSP_STATUS_CREATED) {
-        const char *msg = (rc == (int)FSP_STATUS_CONFLICT) ? "Ten nguoi dung da ton tai"
-                                                           : "Dang ky that bai";
+        const char *msg =
+            (rc == (int)FSP_STATUS_CONFLICT) ? "Ten nguoi dung da ton tai" : "Dang ky that bai";
         return fsp_send_error(ctx->fd, req->event, rc, msg);
     }
 
@@ -56,17 +54,16 @@ static int handle_auth_login(client_ctx_t *ctx, const fsp_frame_t *req) {
     }
 
     char username[64] = {0}, password[128] = {0};
-    if (fsp_json_get_str((const char *)req->payload, "username", username, sizeof(username)) !=
-            0 ||
-        fsp_json_get_str((const char *)req->payload, "password", password, sizeof(password)) !=
-            0) {
+    if (fsp_json_get_str((const char *)req->payload, "username", username, sizeof(username)) != 0 ||
+        fsp_json_get_str((const char *)req->payload, "password", password, sizeof(password)) != 0) {
         return fsp_send_error(ctx->fd, req->event, (int)FSP_STATUS_BAD_REQUEST,
                               "Thieu username hoac password");
     }
 
     if (fsp_user_is_locked_out(username)) {
-        return fsp_send_error(ctx->fd, req->event, (int)FSP_STATUS_UNAUTHORIZED,
-                              "Tai khoan bi tam khoa do dang nhap sai qua 5 lan. Thu lai sau 5 phut.");
+        return fsp_send_error(
+            ctx->fd, req->event, (int)FSP_STATUS_UNAUTHORIZED,
+            "Tai khoan bi tam khoa do dang nhap sai qua 5 lan. Thu lai sau 5 phut.");
     }
 
     fsp_user_t user;
@@ -187,8 +184,9 @@ static int handle_perm_set(client_ctx_t *ctx, const fsp_frame_t *req) {
 
     int rc = fsp_perm_set_recursive(sess.user_id, path, bits, level, recursive);
     if (rc != (int)FSP_STATUS_OK) {
-        const char *msg = (rc == (int)FSP_STATUS_FORBIDDEN) ? "Tu choi truy cap (Khong co quyen SHARE)"
-                                                            : "Khong tim thay duong dan";
+        const char *msg = (rc == (int)FSP_STATUS_FORBIDDEN)
+                              ? "Tu choi truy cap (Khong co quyen SHARE)"
+                              : "Khong tim thay duong dan";
         return fsp_send_error(ctx->fd, req->event, rc, msg);
     }
 
