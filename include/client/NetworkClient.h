@@ -20,8 +20,10 @@ namespace FSP {
 struct Response {
     MessageType type{MessageType::EVENT_RESP};
     std::string event;
-    int status{-1};  // Lấy từ envelope {"status":..,"data":..}; -1 nếu không parse được
-    std::string body;  // Toàn bộ envelope JSON
+    /// Lấy từ envelope {"status":..,"data":..}; -1 nếu không parse được
+    int status{-1};
+    /// Toàn bộ envelope JSON
+    std::string body;
 
     bool ok() const { return type == MessageType::EVENT_RESP && status >= 200 && status < 300; }
 };

@@ -23,14 +23,18 @@ namespace FSP {
  * ABORT_POLL_MS lại kiểm tra abortFlag -> luồng khác luôn dừng được luồng nhận trên mọi nền tảng.
  */
 struct RecvControl {
-    const std::atomic<bool>* abortFlag = nullptr;  // true => dừng nhận ngay, trả về false
-    int idleTimeoutMs = -1;  // > 0: quá N ms không nhận thêm byte nào => trả về false
+    /// true => dừng nhận ngay, trả về false
+    const std::atomic<bool>* abortFlag = nullptr;
+    /// > 0: quá N ms không nhận thêm byte nào => trả về false
+    int idleTimeoutMs = -1;
 };
 
 struct Packet {
     MessageType type{MessageType::EVENT_REQ};
-    std::string event;  // Tên sự kiện (đã đảm bảo null-terminated, <= 31 ký tự)
-    std::vector<uint8_t> payload;  // Payload thô (JSON hoặc nhị phân FILE_CHUNK)
+    /// Tên sự kiện (đã đảm bảo null-terminated, <= 31 ký tự)
+    std::string event;
+    /// Payload thô (JSON hoặc nhị phân FILE_CHUNK)
+    std::vector<uint8_t> payload;
 
     /// Payload dạng chuỗi (dùng cho JSON payload).
     std::string text() const { return std::string(payload.begin(), payload.end()); }

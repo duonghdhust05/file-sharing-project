@@ -35,11 +35,16 @@ public:
     using Handler = std::function<void(Connection&, const Packet&)>;
 
     enum class Result {
-        HANDLED,         // Handler đã đăng ký được gọi và trả về bình thường
-        FALLBACK,        // Không có handler riêng, fallback handler đã xử lý
-        UNKNOWN_EVENT,   // Không có handler nào, đã trả ERROR_RESP 400
-        HANDLER_FAILED,  // Handler ném exception, đã trả ERROR_RESP 500
-        REJECTED  // Packet không hợp lệ để dispatch (event rỗng), đã trả ERROR_RESP 400
+        /// Handler đã đăng ký được gọi và trả về bình thường
+        HANDLED,
+        /// Không có handler riêng, fallback handler đã xử lý
+        FALLBACK,
+        /// Không có handler nào, đã trả ERROR_RESP 400
+        UNKNOWN_EVENT,
+        /// Handler ném exception, đã trả ERROR_RESP 500
+        HANDLER_FAILED,
+        /// Packet không hợp lệ để dispatch (event rỗng), đã trả ERROR_RESP 400
+        REJECTED
     };
 
     /**
