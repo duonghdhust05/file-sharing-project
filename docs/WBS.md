@@ -57,9 +57,9 @@
 > **Trọng tâm:** Quản lý tài khoản, băm Salted SHA-256, Session Token, bảng kiểm tra quyền `can_access` (bước 0–7 theo SRS FR-6), API `PERM_GET`/`PERM_SET` hỗ trợ đệ quy cho thư mục.
 
 * **Tập tin chịu trách nhiệm:**
-  * Header: `include/server/fsp_sha256.h`, `include/server/fsp_user.h`, `include/server/fsp_session.h`, `include/server/fsp_perm.h`
-  * Source: `src/common/fsp_sha256.c`, `src/server/fsp_user.c`, `src/server/fsp_session.c`, `src/server/fsp_perm.c`
-  * Test: `tests/test_auth.c`, `tests/test_perm.c`
+  * Header: `include/common/fsp_sha256.h`, `include/server/fsp_user.h`, `include/server/fsp_session.h`, `include/server/fsp_perm.h`, `include/server/fsp_auth_handler.h`
+  * Source: `src/common/fsp_sha256.c`, `src/server/fsp_user.c`, `src/server/fsp_session.c`, `src/server/fsp_perm.c`, `src/server/fsp_auth_handler.c`
+  * Test: `tests/test_auth_permissions.c`
 * **Checklist Nhiệm vụ Chi tiết:**
   - [x] **M2.1**: Thiết kế lưu trữ đĩa bền vững dạng JSON-lines (`data/users.json`, `data/permissions.json`) ghi nguyên tử qua file `.tmp` + `rename()`:
     - Bảng user: `id`, `username`, `full_name`, `salt_hex`, `password_hash`, `group_id`, `created_at`.
@@ -79,7 +79,7 @@
     - Bitmask 9-bit: `r` (4), `w` (2), `s` (1) cho Chủ / Nhóm / Người khác.
     - Cấp độ chia sẻ: `PRIVATE (0)`, `SHARED (1)`, `PUBLIC (2)`.
     - `share_list` quản lý theo danh sách username kèm quyền (`r`/`w`/`s`).
-  - [ ] **M2.6**: Hiện thực `PERM_GET` và `PERM_SET`:
+  - [x] **M2.6**: Hiện thực `PERM_GET` và `PERM_SET`:
     - Hỗ trợ đổi `perm`, `level`, cấp/thu hồi quyền qua `grant_user`/`revoke_user`.
     - Hỗ trợ cờ `recursive=true` (FR-6.4): đổi quyền hàng loạt cho thư mục và mọi mục con bên trong mà không ảnh hưởng tới các đường dẫn tương tự (như `/a-b` khi sửa `/a`).
   - [x] **M2.7**: Viết bộ test CTest Probe 2 (token hợp lệ / giả / đã logout) và Probe 3 (mỗi bước 0–7 của `can_access`, file `PRIVATE` có bit `0666` vẫn từ chối người ngoài).
