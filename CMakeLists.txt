@@ -1,71 +1,62 @@
 cmake_minimum_required(VERSION 3.16)
-project(FileSharingProject VERSION 1.0.0 LANGUAGES CXX)
+project(FileSharingProject VERSION 2.0.0 LANGUAGES C)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+# Ngôn ngữ thống nhất: C11 thuần + POSIX (docs/C-MIGRATION-PLAN.md, SDD v2.0)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
 
-# Compiler Warnings
-if(MSVC)
-    add_compile_options(/W4 /permissive-)
-else()
-    add_compile_options(-Wall -Wextra -Wpedantic)
+if(NOT UNIX)
+    message(FATAL_ERROR "FSP v2.0 dùng POSIX socket + pthread: hãy build trên Linux (hoặc WSL).")
 endif()
 
-# Platform specific libraries (Winsock for Windows, pthread for Linux)
-if(WIN32)
-    set(PLATFORM_NETWORK_LIBS ws2_32)
-else()
-    set(PLATFORM_NETWORK_LIBS pthread)
-endif()
+# -std=c11 nghiêm ngặt ẩn các API POSIX (getaddrinfo, sigaction, nanosleep...) -> bật lại
+add_compile_definitions(_POSIX_C_SOURCE=200809L)
+add_compile_options(-Wall -Wextra -Wpedantic)
 
-# Global Include Directories
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+find_package(Threads REQUIRED)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# libfsp_common (M1): dùng chung cho server, CLI và GUI
+add_library(fsp_common STATIC
+    src/common/fsp_socket.c
+    src/common/fsp_packet.c
+    src/common/fsp_crc32.c
+    src/common/fsp_json.c
 )
+target_include_directories(fsp_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(fsp_common PUBLIC Threads::Threads)
 
-# Common Interface Library
-add_library(fsp_common INTERFACE)
-target_include_directories(fsp_common INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-# 1. Server Target
-add_executable(fsp_server
-    src/server/main.cpp
+# Server core (M1): dispatcher + 1 thread / client. M2, M3 thêm file .c của mình vào đây.
+add_library(fsp_server_core STATIC
+    src/server/fsp_dispatcher.c
+    src/server/fsp_server.c
 )
-target_link_libraries(fsp_server PRIVATE fsp_common ${PLATFORM_NETWORK_LIBS})
+target_link_libraries(fsp_server_core PUBLIC fsp_common)
 
-# 2. Client CLI Target (Dùng cho kiểm thử chức năng không cần GUI)
-add_executable(fsp_client_cli
-    src/client_cli/main.cpp
-)
-target_link_libraries(fsp_client_cli PRIVATE fsp_common ${PLATFORM_NETWORK_LIBS})
+add_executable(fsp_server src/server/server_main.c)
+target_link_libraries(fsp_server PRIVATE fsp_server_core)
 
-# 3. Optional: Qt Client GUI
-option(BUILD_QT_GUI "Build Qt-based Graphical Client" OFF)
-if(BUILD_QT_GUI)
-    find_package(Qt6 COMPONENTS Widgets Network QUIET)
-    if(NOT Qt6_FOUND)
-        find_package(Qt5 COMPONENTS Widgets Network REQUIRED)
-    endif()
+# M4 thêm ở đây: fsp_client_cli (src/client_cli/cli_main.c) và fsp_client_gui (GTK 3)
 
-    set(CMAKE_AUTOMOC ON)
-    set(CMAKE_AUTORCC ON)
-    set(CMAKE_AUTOUIC ON)
-
-    # Thêm target GUI khi đã có mã nguồn Qt
-    # add_executable(fsp_client_gui src/client_gui/main.cpp)
-    # target_link_libraries(fsp_client_gui PRIVATE fsp_common Qt::Widgets Qt::Network)
-endif()
-
-# 4. Testing Target (CTest Automated Suite)
+# ---------------------------------------------------------------------------
+# Kiểm thử CTest
+# ---------------------------------------------------------------------------
 enable_testing()
-add_executable(fsp_tests
-    tests/test_protocol.cpp
-)
-target_link_libraries(fsp_tests PRIVATE fsp_common ${PLATFORM_NETWORK_LIBS})
-add_test(NAME FSP_Protocol_UnitTests COMMAND fsp_tests)
 
-message(STATUS "FSP Build System Configured Successfully.")
-message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
-message(STATUS "Platform Network Libraries: ${PLATFORM_NETWORK_LIBS}")
-message(STATUS "Automated Testing: ENABLED")
+add_executable(fsp_test_protocol tests/test_protocol.c)
+target_link_libraries(fsp_test_protocol PRIVATE fsp_common)
+add_test(NAME FSP_Protocol_Contract COMMAND fsp_test_protocol)
+
+add_executable(fsp_test_packet tests/test_packet.c)
+target_link_libraries(fsp_test_packet PRIVATE fsp_common)
+add_test(NAME FSP_Probe1_Packet COMMAND fsp_test_packet)
+
+add_executable(fsp_test_json tests/test_json.c)
+target_link_libraries(fsp_test_json PRIVATE fsp_common)
+add_test(NAME FSP_Json COMMAND fsp_test_json)
+
+add_executable(fsp_test_network_core tests/test_network_core.c)
+target_link_libraries(fsp_test_network_core PRIVATE fsp_server_core)
+add_test(NAME FSP_Network_Core_Integration COMMAND fsp_test_network_core)
+set_tests_properties(FSP_Network_Core_Integration PROPERTIES TIMEOUT 120)

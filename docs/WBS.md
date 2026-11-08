@@ -38,10 +38,10 @@
     - Kiểm tra `payload_len <= BUFFER_SIZE` (128 KB).
     - Đọc đủ `payload_len` bytes qua `recv_exact`.
     - Kiểm tra checksum IEEE 802.3 CRC32 của payload.
-  - [ ] **M1.3**: Xây dựng kiến trúc `EventDispatcher` bằng C11:
+  - [x] **M1.3**: Xây dựng kiến trúc `EventDispatcher` bằng C11:
     - Bảng ánh xạ tuyến tính tĩnh `{event_name, handler_fn}`.
     - Cung cấp `dispatcher_register(event, fn)` và `dispatcher_handle(ctx, req)`.
-  - [ ] **M1.4**: Hiện thực vòng lặp máy chủ (`server_main.c`):
+  - [x] **M1.4**: Hiện thực vòng lặp máy chủ (`server_main.c`):
     - Vòng lặp `accept()` lắng nghe cổng 8088.
     - Tạo 1 thread riêng cho mỗi client (`pthread_create` + `pthread_detach`).
     - Khởi tạo bảng CRC32 một lần trước khi tạo thread để tránh data race.
@@ -49,7 +49,7 @@
     - *(Thread pool là COULD khi hoàn thành sớm các mục MUST).*
   - [ ] **M1.5**: Triển khai cơ chế Heartbeat (`PING`/`PONG`) xử lý tự động trong vòng lặp client thread.
   - [x] **M1.6**: Viết test CTest Probe 1: chứng minh tách đúng 2 frame trong 1 buffer (dính gói) và ghép đúng frame nhận thành nhiều mảnh.
-  - [ ] **M1.7**: Kiểm thử tải đồng thời ≥ 5 client cùng kết nối và truyền nhận dữ liệu ổn định (NFR-3).
+  - [x] **M1.7**: Kiểm thử tải đồng thời ≥ 5 client cùng kết nối và truyền nhận dữ liệu ổn định (NFR-3).
 
 ---
 
