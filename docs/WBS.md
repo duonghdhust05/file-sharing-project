@@ -21,14 +21,14 @@
 
 * **Header chịu trách nhiệm:** `include/server/NetworkServer.h`, `include/client/NetworkClient.h`, `include/common/EventDispatcher.h`
 * **Checklist Nhiệm vụ Chi tiết:**
-  - [ ] **M1.1**: Viết lớp Wrapper cho Socket đa nền tảng (`Cross-platform TCP Socket`: Winsock2 trên Windows, sys/socket trên Linux).
-  - [ ] **M1.2**: Cài đặt thuật toán đóng/mở gói Frame 42-byte (`sendPacket`, `recvPacket`):
+  - [x] **M1.1**: Viết lớp Wrapper cho Socket đa nền tảng (`Cross-platform TCP Socket`: Winsock2 trên Windows, sys/socket trên Linux).
+  - [x] **M1.2**: Cài đặt thuật toán đóng/mở gói Frame 42-byte (`sendPacket`, `recvPacket`):
     - Đọc đúng 42 bytes Header $\to$ kiểm tra Magic byte `0xAA`.
     - Dùng vòng lặp `recv()` chuẩn cho đến khi tích lũy đủ chính xác `payload_len` bytes (giải quyết triệt để vấn đề dính gói và phân mảnh TCP).
-  - [ ] **M1.3**: Xây dựng kiến trúc `EventDispatcher` (Mô hình Event-driven giống Socket.IO):
+  - [x] **M1.3**: Xây dựng kiến trúc `EventDispatcher` (Mô hình Event-driven giống Socket.IO):
     - Cung cấp hàm đăng ký sự kiện: `registerHandler(eventName, callback)`.
     - Tự động parse payload và kích hoạt đúng callback khi có packet tương ứng đến.
-  - [ ] **M1.4**: Xây dựng `ServerWorkerThreadPool` trên Server:
+  - [x] **M1.4**: Xây dựng `ServerWorkerThreadPool` trên Server:
     - Main thread chỉ chạy `accept()`.
     - Client socket được gán cho Worker Thread xử lý non-blocking hoặc thread-per-connection an toàn.
   - [ ] **M1.5**: Triển khai cơ chế Heartbeat (Ping/Pong) để tự động giải phóng tài nguyên khi Client bị mất kết nối đột ngột.

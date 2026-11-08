@@ -103,9 +103,67 @@ Giao thức FSP sử dụng cơ chế **Length-Prefixed Framing**. Mỗi frame b
   3. Đọc đúng `ntohl(header.payload_len)` bytes từ luồng TCP vào buffer.
   4. Xác minh mã băm IEEE 802.3 CRC32 trước khi đưa lên tầng xử lý nghiệp vụ.
 
-### 3.3 Kiến trúc Đa luồng Server (Worker ThreadPool)
-* **Main Listener Thread**: Khởi tạo socket, `bind()`, `listen()`, chạy vòng lặp vô tận chỉ làm nhiệm vụ `accept()` kết nối mới.
-* **Worker ThreadPool**: Sử dụng hàng đợi an toàn đa luồng (`ThreadSafeQueue<int> clientSockets`) kết hợp `std::condition_variable` để đánh thức các worker threads xử lý yêu cầu song song.
+### 3.3 Lớp Socket Đa nền tảng (M1.1 - `include/common/Socket.h`)
+* **RAII + move-only**: handle (`SOCKET` trên Winsock2, `int` trên POSIX) được đóng tự động trong destructor; cấm copy để không có 2 đối tượng cùng đóng một handle.
+* **Chống sập tiến trình**: `send()` dùng `MSG_NOSIGNAL` (Linux) nên ghi vào socket mà client đã đóng chỉ trả về lỗi `EPIPE`, không phát `SIGPIPE` giết cả server. `send()/recv()/accept()` tự retry khi bị `EINTR`.
+* **Tiện ích cho tầng trên**: `waitReadable(ms)` (poll/WSAPoll), `shutdownBoth()` (báo kết thúc kết nối cho peer), `localPort()` (bind cổng 0 khi test), `connect()` hỗ trợ cả hostname qua `getaddrinfo`.
+* **Windows**: không bật `SO_REUSEADDR` khi bind (trên Winsock tùy chọn này cho phép tiến trình khác bind trùng cổng).
+* **Dừng luồng nhận an toàn trên mọi nền tảng**: trên Winsock, `shutdown()` từ luồng khác **không** đánh thức `recv()` đang bị chặn (khác Linux). Vì vậy `readExact()` nhận thêm `RecvControl { abortFlag, idleTimeoutMs }`: chỉ gọi `recv()` sau khi `poll`/`WSAPoll` báo có dữ liệu, và cứ mỗi 100 ms lại kiểm tra `abortFlag`. `Connection::requestClose()` và `NetworkClient::interrupt()` bật cờ này nên `stop()` không bao giờ bị treo.
+
+### 3.4 Kiểm tra Header Fail-Closed & API `sendPacket` / `recvPacket` (M1.2)
+`PacketHandler::validateHeader()` từ chối frame và đóng kết nối ngay khi:
+
+| Điều kiện | Lý do |
+| :--- | :--- |
+| `magic != 0xAA` | Lệch biên frame / dữ liệu rác |
+| `type` ngoài `0x01..0x07` | Không thuộc `MessageType` |
+| `event[32]` không chứa `'\0'` | Chặn đọc tràn bộ nhớ khi dựng `std::string(event)` |
+| `payload_len > 128 KB` (`Config::BUFFER_SIZE`) | Chặn tấn công cấp phát bộ nhớ khổng lồ; 1 `FILE_CHUNK` đầy (88 B + 64 KB) vẫn vừa |
+| CRC32 sai / payload rỗng nhưng checksum ≠ 0 | Toàn vẹn dữ liệu |
+
+API mức cao: `sendPacket(socket, type, event, payload)` (từ chối event ≥ 32 ký tự hoặc payload quá lớn **trước** khi gửi) và `recvPacket(socket, Packet&)` trả về `struct Packet { MessageType type; std::string event; std::vector<uint8_t> payload; }`.
+
+### 3.5 Event Dispatcher & Quy ước Phản hồi (M1.3 - `include/common/EventDispatcher.h`)
+* Mô hình giống Socket.IO: module nghiệp vụ đăng ký `registerHandler(eventName, callback)` với `callback(Connection&, const Packet&)`.
+* `dispatch()` tra bảng `unordered_map<event, handler>` (bảo vệ bằng `shared_mutex`, gọi callback **ngoài** lock):
+  * Có handler → gọi handler. Handler ném exception → tự trả `ERROR_RESP` 500 (không lộ chi tiết lỗi nội bộ), kết nối vẫn giữ.
+  * Không có handler → trả `ERROR_RESP` 400 `"unknown event"` (hoặc gọi fallback handler nếu được đặt).
+  * Đăng ký trùng tên bị từ chối (tránh 2 module vô tình ghi đè handler của nhau); muốn ghi đè phải dùng `replaceHandler()`.
+* **Quy ước envelope cho mọi `EVENT_RESP` / `ERROR_RESP`** (frame phản hồi giữ nguyên tên event của request):
+  ```json
+  {"status": 200, "data": { ... }}            // EVENT_RESP thành công
+  {"status": 403, "data": {"error": "..."}}   // EVENT_RESP lỗi nghiệp vụ hoặc ERROR_RESP
+  ```
+  Handler chỉ cần gọi `conn.respond(pkt.event, status, dataJson)`. Ví dụ tích hợp M2:
+  ```cpp
+  dispatcher.registerHandler(Events::AUTH_LOGIN, [&](Connection& conn, const Packet& pkt) {
+      auto r = authHandler.handle(pkt.event, pkt.text());  // AuthResult{status, body}
+      conn.respond(pkt.event, r.status, r.body);
+  });
+  ```
+* **`Connection`**: `send()/respond()/sendError()` thread-safe (mutex gửi riêng, nhiều luồng push không bị trộn byte); `requestClose()` thread-safe; attribute map theo kết nối (`setAttribute("session_token", ...)`, `"cwd"`) dành cho M2/M3.
+
+### 3.6 Kiến trúc Đa luồng Server (M1.4 - `NetworkServer` + `ServerWorkerThreadPool`)
+```
+[Listener thread]  waitReadable(200ms) → accept()  ──push──>  ThreadSafeQueue<Task> (≤128)
+                                                                     │ pop (condition_variable)
+                                     [Worker 1..64]  recvPacket → EventDispatcher::dispatch → loop
+```
+* **Listener thread**: chỉ `accept()` và giao kết nối cho pool; poll 200 ms để kiểm tra cờ dừng.
+* **Worker ThreadPool** (`Config::THREAD_POOL_SIZE = 64`, đáp ứng NFR-03 ≥ 50 clients): mỗi worker phục vụ trọn vẹn một kết nối (thread-per-connection lấy từ pool) rồi quay lại lấy kết nối tiếp theo. Số thread cố định ⇒ không bị cạn kiệt thread khi có nhiều kết nối.
+* **Back-pressure**: hàng đợi đầy (`MAX_PENDING_CONNECTIONS = 128`) ⇒ trả `ERROR_RESP` event `SERVER_BUSY` (status 500) rồi đóng kết nối.
+* **Vòng đời**: `start()` (listener chạy nền, dùng cho test) / `run()` (chặn luồng main tới khi dừng); `requestStop()` chỉ ghi `atomic<bool>` nên gọi được từ signal handler Ctrl+C; `stop()` đóng listener → `shutdown()` mọi kết nối để đánh thức worker → join toàn bộ thread → hủy kết nối còn xếp hàng.
+* **Hook**: `setOnConnect` / `setOnDisconnect` (vd: M2 hủy session khi client rớt mạng - FR-01.4).
+* **Hạn chế đã biết**: client treo kết nối mà không gửi gì sẽ giữ worker cho tới khi ngắt; `idleTimeoutSeconds` là giải pháp tạm, **M1.5 Heartbeat** sẽ giải quyết triệt để.
+
+### 3.7 Kiểm thử Tầng Mạng (CTest)
+| Suite | Nội dung chính |
+| :--- | :--- |
+| `FSP_Network_Core_Tests` | Pack/unpack, Probe 1 sticky trong buffer, CRC/magic sai, event không `'\0'`, type lạ, `payload_len` 2 GB, frame phân mảnh 7 byte/lần |
+| `FSP_Dispatcher_ThreadPool_Tests` | Định tuyến handler, 400/500, quy tắc đăng ký, 8 luồng × 100 frame 8 KB gửi đồng thời không trộn byte, pool chạy song song thật, back-pressure, shutdown giải phóng tài nguyên |
+| `FSP_Server_Integration_Tests` (TCP loopback thật) | 500 frame trong 1 lần `send()`, 1 frame gửi từng byte, 50 client × 20 request, frame độc hại bị ngắt mà server vẫn sống, `SERVER_BUSY`, push đa luồng, `stop()` < 3 s khi còn client |
+
+Toàn bộ suite sạch dưới AddressSanitizer + UBSan và ThreadSanitizer.
 
 ---
 
