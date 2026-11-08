@@ -17,22 +17,9 @@
                         ring: "hsl(222.2 84% 4.9%)",
                         background: "hsl(0 0% 100%)",
                         foreground: "hsl(222.2 84% 4.9%)",
-                        primary: {
-                            DEFAULT: "hsl(222.2 47.4% 11.2%)",
-                            foreground: "hsl(210 40% 98%)",
-                        },
-                        secondary: {
-                            DEFAULT: "hsl(210 40% 96.1%)",
-                            foreground: "hsl(222.2 47.4% 11.2%)",
-                        },
-                        muted: {
-                            DEFAULT: "hsl(210 40% 96.1%)",
-                            foreground: "hsl(215.4 16.3% 46.9%)",
-                        },
-                        accent: {
-                            DEFAULT: "hsl(210 40% 96.1%)",
-                            foreground: "hsl(222.2 47.4% 11.2%)",
-                        },
+                        primary: { DEFAULT: "hsl(222.2 47.4% 11.2%)", foreground: "hsl(210 40% 98%)" },
+                        secondary: { DEFAULT: "hsl(210 40% 96.1%)", foreground: "hsl(222.2 47.4% 11.2%)" },
+                        muted: { DEFAULT: "hsl(210 40% 96.1%)", foreground: "hsl(215.4 16.3% 46.9%)" },
                     }
                 }
             }
@@ -42,75 +29,91 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .font-mono {
-            font-family: 'JetBrains Mono', monospace;
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
 
-    <!-- 1. TOP NOTIFICATION / SCENARIO GUIDE BANNER -->
-    <header class="bg-slate-900 text-slate-100 border-b border-slate-800 text-xs px-4 py-2 flex flex-wrap items-center justify-between gap-2 shadow-sm">
-        <div class="flex items-center gap-2">
-            <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span class="font-semibold tracking-wide uppercase text-slate-300">FSP-Vault Prototype</span>
-            <span class="text-slate-500">|</span>
-            <span class="text-slate-400">Đồ án Lập trình Socket C11 & GTK 3 (Topic 6 — Group 7)</span>
+    <!-- 1. TOP PERSONA SWITCHER & BANNER -->
+    <header class="bg-slate-900 text-slate-100 border-b border-slate-800 text-xs px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+        <div class="flex items-center gap-2.5">
+            <span class="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="font-bold tracking-wide uppercase text-slate-200">FSP-Vault Client</span>
+            <span class="text-slate-600">|</span>
+            <span class="text-slate-400 font-mono">Giao thức FSP :8088 (C11 + GTK 3)</span>
         </div>
-        <div class="flex items-center gap-3">
-            <span class="text-slate-400">Kịch bản SRS §3.4:</span>
-            <div class="inline-flex rounded-md shadow-xs bg-slate-800 p-0.5 border border-slate-700">
-                <button onclick="switchUser('an')" id="btn-user-an" class="px-2.5 py-1 rounded text-xs font-medium transition bg-blue-600 text-white">An (Chủ file)</button>
-                <button onclick="switchUser('binh')" id="btn-user-binh" class="px-2.5 py-1 rounded text-xs font-medium text-slate-300 hover:text-white transition">Bình (Được share)</button>
-                <button onclick="switchUser('chi')" id="btn-user-chi" class="px-2.5 py-1 rounded text-xs font-medium text-slate-300 hover:text-white transition">Chi (Không quyền)</button>
-                <button onclick="switchUser('admin')" id="btn-user-admin" class="px-2.5 py-1 rounded text-xs font-medium text-amber-300 hover:text-white transition">Admin (Toàn quyền)</button>
+
+        <!-- PERSONA SELECTOR BAR -->
+        <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-slate-400 text-[11px] font-medium">Chuyển Persona trải nghiệm:</span>
+            <div class="inline-flex rounded-lg bg-slate-800 p-0.5 border border-slate-700 shadow-inner">
+                <button onclick="switchUser('an')" id="btn-user-an" class="px-3 py-1 rounded-md text-xs font-semibold transition bg-blue-600 text-white shadow-xs flex items-center gap-1.5">
+                    <i data-lucide="user" class="w-3.5 h-3.5"></i> An (Chủ file)
+                </button>
+                <button onclick="switchUser('binh')" id="btn-user-binh" class="px-3 py-1 rounded-md text-xs font-medium text-slate-300 hover:text-white transition flex items-center gap-1.5">
+                    <i data-lucide="user-check" class="w-3.5 h-3.5"></i> Bình (Được share riêng)
+                </button>
+                <button onclick="switchUser('chi')" id="btn-user-chi" class="px-3 py-1 rounded-md text-xs font-medium text-slate-300 hover:text-white transition flex items-center gap-1.5">
+                    <i data-lucide="user-x" class="w-3.5 h-3.5"></i> Chi (Người lạ/Ngoài nhóm)
+                </button>
+                <button onclick="switchUser('admin')" id="btn-user-admin" class="px-3 py-1 rounded-md text-xs font-medium text-amber-300 hover:text-white transition flex items-center gap-1.5">
+                    <i data-lucide="shield" class="w-3.5 h-3.5"></i> Admin (Toàn quyền)
+                </button>
             </div>
         </div>
     </header>
 
-    <!-- 2. QUICK CONNECT BAR (Kiểu FileZilla) -->
-    <div class="bg-white border-b border-slate-200 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div class="flex items-center gap-2 flex-wrap flex-1 max-w-4xl">
-            <div class="flex items-center gap-1.5">
-                <span class="text-slate-500 font-medium">Máy chủ:</span>
-                <input type="text" value="127.0.0.1" readonly class="w-28 bg-slate-100 border border-slate-300 rounded px-2 py-1 font-mono text-slate-600">
-            </div>
-            <div class="flex items-center gap-1.5">
-                <span class="text-slate-500 font-medium">Cổng:</span>
-                <input type="text" value="8088" readonly class="w-16 bg-slate-100 border border-slate-300 rounded px-2 py-1 font-mono text-slate-600">
-            </div>
-            <div class="flex items-center gap-1.5">
-                <span class="text-slate-500 font-medium">Tài khoản:</span>
-                <input type="text" id="status-username" value="an" readonly class="w-24 bg-slate-100 border border-slate-300 rounded px-2 py-1 font-semibold text-slate-800">
-            </div>
-            <div class="flex items-center gap-1.5">
-                <span class="text-slate-500 font-medium">Mật khẩu:</span>
-                <input type="password" value="********" readonly class="w-20 bg-slate-100 border border-slate-300 rounded px-2 py-1 text-slate-400">
-            </div>
-            <button class="bg-slate-900 text-white px-3 py-1 rounded font-medium hover:bg-slate-800 transition inline-flex items-center gap-1">
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Kết nối lại
+    <!-- 2. INTERACTIVE DEMO SCENARIOS BAR (Hướng dẫn kịch bản kiểm thử) -->
+    <div class="bg-blue-50/80 border-b border-blue-200 px-4 py-2 text-xs flex flex-wrap items-center justify-between gap-2 text-blue-900">
+        <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-bold flex items-center gap-1 text-blue-800">
+                <i data-lucide="play-circle" class="w-4 h-4 text-blue-600"></i> Kịch bản thử nghiệm nhanh:
+            </span>
+            <button onclick="runScenario('share_private')" class="bg-white border border-blue-300 hover:bg-blue-100 text-blue-800 px-2.5 py-1 rounded text-[11px] font-medium transition shadow-2xs">
+                1. An share riêng thư mục BaoCao cho Bình (r--)
+            </button>
+            <button onclick="runScenario('test_public')" class="bg-white border border-blue-300 hover:bg-blue-100 text-blue-800 px-2.5 py-1 rounded text-[11px] font-medium transition shadow-2xs">
+                2. Xem file PUBLIC (An, Bình, Chi đều đọc được)
+            </button>
+            <button onclick="runScenario('test_path_traversal')" class="bg-white border border-rose-300 hover:bg-rose-100 text-rose-800 px-2.5 py-1 rounded text-[11px] font-medium transition shadow-2xs">
+                3. Thử tấn công Path Traversal (../../etc/passwd)
             </button>
         </div>
+        <div class="text-[11px] text-blue-700 italic">
+            *Nhấn nút trên để chạy tự động kịch bản mẫu
+        </div>
+    </div>
+
+    <!-- 3. QUICK CONNECT BAR (Kiểu FileZilla) -->
+    <div class="bg-white border-b border-slate-200 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xs">
+        <div class="flex items-center gap-2 flex-wrap flex-1 max-w-4xl">
+            <div class="flex items-center gap-1.5">
+                <span class="text-slate-500 font-medium">Host:</span>
+                <input type="text" value="127.0.0.1" readonly class="w-24 bg-slate-100 border border-slate-300 rounded px-2 py-0.5 font-mono text-slate-600">
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="text-slate-500 font-medium">Port:</span>
+                <input type="text" value="8088" readonly class="w-14 bg-slate-100 border border-slate-300 rounded px-2 py-0.5 font-mono text-slate-600">
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="text-slate-500 font-medium">User:</span>
+                <input type="text" id="status-username" value="an" readonly class="w-20 bg-slate-100 border border-slate-300 rounded px-2 py-0.5 font-bold text-slate-800 font-mono">
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="text-slate-500 font-medium">Token:</span>
+                <span id="session-token-badge" class="font-mono text-[11px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">tok_an_a49f...</span>
+            </div>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Đã kết nối
+            </span>
+        </div>
         <div class="flex items-center gap-2">
-            <button onclick="openSearchModal()" class="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded font-medium hover:bg-blue-100 transition inline-flex items-center gap-1.5 shadow-xs">
+            <button onclick="openSearchModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded font-medium transition inline-flex items-center gap-1.5 shadow-xs">
                 <i data-lucide="search" class="w-3.5 h-3.5"></i> Tìm kiếm tệp (Ctrl+F)
             </button>
             <button onclick="openNewFolderModal()" class="bg-white border border-slate-300 text-slate-700 px-3 py-1 rounded font-medium hover:bg-slate-100 transition inline-flex items-center gap-1.5 shadow-xs">
@@ -119,100 +122,118 @@
         </div>
     </div>
 
-    <!-- 3. REAL-TIME PROTOCOL LOG CONSOLE (Phản chiếu gói tin FSP 42-byte) -->
+    <!-- 4. REAL-TIME PROTOCOL LOG CONSOLE -->
     <div class="bg-slate-900 border-b border-slate-800 text-slate-300 px-4 py-1.5 text-[11px] font-mono flex items-center justify-between">
         <div class="flex items-center gap-2 overflow-hidden whitespace-nowrap">
             <span class="text-emerald-400 font-bold">[FSP :8088]</span>
-            <span id="log-console-text" class="text-slate-300 truncate">SẴN SÀNG: Kết nối TCP an toàn đã thiết lập. Phiên: token=7e4a... (TTL 30m)</span>
+            <span id="log-console-text" class="text-slate-300 truncate">SẴN SÀNG: Kết nối TCP an toàn đã thiết lập. Phiên làm việc của [an]</span>
         </div>
-        <button onclick="toggleLogDetail()" class="text-slate-400 hover:text-white transition shrink-0 ml-2">
-            <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+        <button onclick="toggleLogDetail()" class="text-slate-400 hover:text-white transition shrink-0 ml-2 flex items-center gap-1 text-[10px]">
+            <i data-lucide="terminal" class="w-3.5 h-3.5"></i> Lịch sử gói
         </button>
     </div>
 
     <!-- Collapsible Full Protocol Log Box -->
     <div id="full-log-drawer" class="hidden bg-slate-950 border-b border-slate-800 text-slate-400 p-3 font-mono text-[11px] max-h-36 overflow-y-auto space-y-1">
-        <div class="text-slate-500">// Băng ghi thông điệp FSP (Header 42-byte + JSON Payload / Chunk 88-byte)</div>
+        <div class="text-slate-500">// Gói tin FSP (Header 42 bytes + JSON Payload / Chunk 88 bytes)</div>
         <div id="log-history" class="space-y-0.5">
-            <div><span class="text-blue-400">[17:00:01] REQ  0x01</span> AUTH_LOGIN {"username":"an"}</div>
-            <div><span class="text-emerald-400">[17:00:01] RESP 0x02</span> AUTH_LOGIN 200 OK {"token":"7e4a90...","home":"/home/an"}</div>
-            <div><span class="text-blue-400">[17:00:02] REQ  0x01</span> DIR_LIST {"token":"7e4a90...","path":"/home/an"}</div>
-            <div><span class="text-emerald-400">[17:00:02] RESP 0x02</span> DIR_LIST 200 OK (2 mục)</div>
+            <div><span class="text-blue-400">[REQ  0x01]</span> AUTH_LOGIN {"username":"an"}</div>
+            <div><span class="text-emerald-400">[RESP 0x02]</span> AUTH_LOGIN 200 OK {"token":"tok_an_a49f...","home":"/home/an"}</div>
         </div>
     </div>
 
-    <!-- 4. MAIN DUAL-PANE FILE EXPLORER (LOCAL vs REMOTE kiểu FileZilla) -->
-    <main class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-0 border-b border-slate-200 bg-white min-h-[460px]">
+    <!-- 5. MAIN DUAL-PANE FILE EXPLORER (LOCAL vs REMOTE) -->
+    <main class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-0 border-b border-slate-200 bg-white min-h-[480px]">
         
-        <!-- LEFT PANE: LOCAL SYSTEM -->
-        <section class="border-r border-slate-200 flex flex-col">
+        <!-- LEFT PANE: LOCAL SYSTEM (TÙY BIẾN THEO TỪNG PERSONA) -->
+        <section class="border-r border-slate-200 flex flex-col bg-white">
             <!-- Header bar of Local Pane -->
-            <div class="bg-slate-100/80 px-3 py-2 border-b border-slate-200 flex items-center justify-between text-xs">
-                <div class="flex items-center gap-1.5 font-semibold text-slate-700">
-                    <i data-lucide="laptop" class="w-4 h-4 text-slate-500"></i>
-                    <span>MÁY CỤC BỘ (Local)</span>
+            <div class="bg-slate-100/90 px-3 py-2 border-b border-slate-200 flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2 font-semibold text-slate-800">
+                    <i data-lucide="laptop" class="w-4 h-4 text-slate-600"></i>
+                    <span>MÁY CỤC BỘ: <span id="local-user-title" class="text-blue-700 font-bold">an</span></span>
                 </div>
-                <div class="flex items-center gap-1">
-                    <button onclick="navigateLocal('..')" class="p-1 hover:bg-slate-200 rounded text-slate-600" title="Lên thư mục cha">
-                        <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button class="p-1 hover:bg-slate-200 rounded text-slate-600" title="Làm mới">
-                        <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
-                    </button>
+                <div class="flex items-center gap-1 text-[11px] text-slate-500">
+                    <span id="local-context-desc">Máy trạm của An</span>
                 </div>
             </div>
-            <!-- Path input bar -->
+
+            <!-- Local Path input bar -->
             <div class="px-3 py-1.5 bg-slate-50 border-b border-slate-200 flex items-center gap-2 text-xs">
-                <span class="text-slate-400 font-mono text-[11px]">Đường dẫn:</span>
+                <span class="text-slate-400 font-mono text-[11px]">Thư mục:</span>
                 <input id="local-path-input" type="text" value="C:/Users/an/Documents/" readonly class="flex-1 bg-white border border-slate-200 rounded px-2 py-0.5 font-mono text-slate-700">
+                <button onclick="navigateLocal('..')" class="p-1 hover:bg-slate-200 rounded text-slate-600" title="Lên thư mục cha">
+                    <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                </button>
             </div>
+
             <!-- File List Table -->
             <div class="flex-1 overflow-y-auto">
                 <table class="w-full text-left text-xs border-collapse">
                     <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b border-slate-200 font-medium">
                         <tr>
-                            <th class="py-2 px-3">Tên tệp tin</th>
+                            <th class="py-2 px-3">Tên tệp tin cục bộ</th>
                             <th class="py-2 px-2 text-right">Kích thước</th>
-                            <th class="py-2 px-3 text-center w-24">Thao tác</th>
+                            <th class="py-2 px-3 text-center w-28">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="local-file-table" class="divide-y divide-slate-100">
-                        <!-- Populated by JS -->
+                        <!-- Populated by JS based on Persona -->
                     </tbody>
                 </table>
             </div>
+
             <!-- Footer of Local Pane -->
             <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-                <span id="local-summary">3 tệp, 1 thư mục</span>
-                <button onclick="uploadSelectedLocalFile()" id="btn-upload-action" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded font-medium transition inline-flex items-center gap-1 shadow-xs disabled:opacity-50">
+                <span id="local-summary">0 mục</span>
+                <button onclick="uploadSelectedLocalFile()" id="btn-upload-action" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded font-medium transition inline-flex items-center gap-1.5 shadow-xs disabled:opacity-50">
                     <span>Upload lên Server</span> <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                 </button>
             </div>
         </section>
 
         <!-- RIGHT PANE: REMOTE FSP SERVER -->
-        <section class="flex flex-col">
-            <!-- Header bar of Remote Pane -->
-            <div class="bg-slate-100/80 px-3 py-2 border-b border-slate-200 flex items-center justify-between text-xs">
-                <div class="flex items-center gap-1.5 font-semibold text-slate-700">
+        <section class="flex flex-col bg-white">
+            <!-- Header bar of Remote Pane with 3 View Filter Tabs -->
+            <div class="bg-slate-100/90 px-3 py-1.5 border-b border-slate-200 flex flex-wrap items-center justify-between text-xs gap-2">
+                <div class="flex items-center gap-1.5 font-semibold text-slate-800">
                     <i data-lucide="server" class="w-4 h-4 text-blue-600"></i>
-                    <span>MÁY CHỦ FSP-VAULT (Remote :8088)</span>
+                    <span>MÁY CHỦ FSP (:8088)</span>
                 </div>
-                <div class="flex items-center gap-1">
-                    <button onclick="navigateRemote('..')" class="p-1 hover:bg-slate-200 rounded text-slate-600" title="Lên thư mục cha">
-                        <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                
+                <!-- 3 VIEW TABS: VFS TREE, SHARED WITH ME, PUBLIC -->
+                <div class="inline-flex rounded bg-slate-200 p-0.5 text-[11px] font-medium border border-slate-300">
+                    <button onclick="setRemoteViewMode('vfs')" id="tab-view-vfs" class="px-2.5 py-0.5 rounded bg-white text-slate-800 shadow-2xs font-semibold">
+                        Cây VFS
                     </button>
-                    <button onclick="renderRemoteFiles()" class="p-1 hover:bg-slate-200 rounded text-slate-600" title="Làm mới">
-                        <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+                    <button onclick="setRemoteViewMode('shared')" id="tab-view-shared" class="px-2.5 py-0.5 rounded text-slate-600 hover:text-slate-900 transition flex items-center gap-1">
+                        <i data-lucide="users" class="w-3 h-3 text-blue-600"></i> Được chia sẻ cho tôi <span id="shared-badge-count" class="bg-blue-100 text-blue-800 px-1 rounded-full text-[9px]">1</span>
+                    </button>
+                    <button onclick="setRemoteViewMode('public')" id="tab-view-public" class="px-2.5 py-0.5 rounded text-slate-600 hover:text-slate-900 transition flex items-center gap-1">
+                        <i data-lucide="globe" class="w-3 h-3 text-emerald-600"></i> Công khai (Public)
                     </button>
                 </div>
             </div>
+
             <!-- Path input bar -->
             <div class="px-3 py-1.5 bg-slate-50 border-b border-slate-200 flex items-center gap-2 text-xs">
                 <span class="text-slate-400 font-mono text-[11px]">Đường dẫn ảo:</span>
                 <input id="remote-path-input" type="text" value="/home/an" readonly class="flex-1 bg-white border border-slate-200 rounded px-2 py-0.5 font-mono text-slate-700">
+                <button onclick="navigateRemote('..')" class="p-1 hover:bg-slate-200 rounded text-slate-600" title="Lên thư mục cha">
+                    <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                </button>
+                <button onclick="renderRemoteFiles()" class="p-1 hover:bg-slate-200 rounded text-slate-600" title="Làm mới">
+                    <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+                </button>
                 <span id="remote-status-badge" class="px-2 py-0.5 text-[10px] font-semibold bg-emerald-100 text-emerald-800 rounded-full">200 OK</span>
             </div>
+
+            <!-- Dynamic View Notice Bar -->
+            <div id="remote-view-notice" class="hidden px-3 py-1 bg-amber-50 border-b border-amber-200 text-amber-900 text-[11px] flex items-center justify-between">
+                <span id="remote-view-notice-text">Chế độ xem</span>
+                <button onclick="setRemoteViewMode('vfs')" class="text-amber-800 underline font-medium">Quay lại Cây VFS</button>
+            </div>
+
             <!-- File List Table -->
             <div class="flex-1 overflow-y-auto">
                 <table class="w-full text-left text-xs border-collapse">
@@ -222,8 +243,9 @@
                             <th class="py-2 px-2 text-right">Kích thước</th>
                             <th class="py-2 px-2 font-mono text-center">Quyền</th>
                             <th class="py-2 px-2 text-center">Mức</th>
-                            <th class="py-2 px-2">Chủ sở hữu</th>
-                            <th class="py-2 px-3 text-center">Thao tác</th>
+                            <th class="py-2 px-2">Chủ</th>
+                            <th class="py-2 px-3 text-center">Quyền của bạn</th>
+                            <th class="py-2 px-3 text-center w-28">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="remote-file-table" class="divide-y divide-slate-100">
@@ -231,14 +253,15 @@
                     </tbody>
                 </table>
             </div>
+
             <!-- Footer of Remote Pane -->
             <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-                <span id="remote-summary">Đang nạp danh sách...</span>
+                <span id="remote-summary">0 mục khả dụng</span>
                 <div class="flex items-center gap-1.5">
-                    <button onclick="downloadSelectedRemoteFile()" id="btn-download-action" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded font-medium transition inline-flex items-center gap-1 shadow-xs disabled:opacity-50">
+                    <button onclick="downloadSelectedRemoteFile()" id="btn-download-action" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded font-medium transition inline-flex items-center gap-1 shadow-xs">
                         <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> <span>Tải về máy</span>
                     </button>
-                    <button onclick="openPermissionModalForSelected()" id="btn-perm-action" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded font-medium transition inline-flex items-center gap-1 shadow-xs disabled:opacity-50">
+                    <button onclick="openPermissionModalForSelected()" id="btn-perm-action" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded font-medium transition inline-flex items-center gap-1 shadow-xs">
                         <i data-lucide="shield" class="w-3.5 h-3.5"></i> <span>Phân quyền</span>
                     </button>
                 </div>
@@ -247,22 +270,22 @@
 
     </main>
 
-    <!-- 5. BOTTOM PANE: TRANSFER QUEUE & NON-FREEZING PROGRESS (Kiểu FileZilla) -->
-    <section class="h-48 bg-white border-b border-slate-200 flex flex-col">
+    <!-- 6. BOTTOM PANE: TRANSFER QUEUE & CHUNKING (64 KB) -->
+    <section class="h-44 bg-white border-b border-slate-200 flex flex-col">
         <div class="bg-slate-100 px-3 py-1.5 border-b border-slate-200 flex items-center justify-between text-xs">
             <div class="flex items-center gap-3">
                 <span class="font-semibold text-slate-700 flex items-center gap-1.5">
                     <i data-lucide="arrow-down-up" class="w-3.5 h-3.5 text-blue-600"></i> HÀNG ĐỢI TRUYỀN TẢI (Chunking 64 KB Stream)
                 </span>
-                <span class="text-slate-400 text-[11px]">• Giới hạn RAM &le; 50 MB • CRC32 Kiểm tra tức thì</span>
+                <span class="text-slate-400 text-[11px]">• Giới hạn RAM &le; 50 MB • CRC32 Kiểm tra tức thì • File tạm .part</span>
             </div>
             <div class="text-[11px] text-slate-500">
-                Đang truyền: <span id="active-transfers-count" class="font-semibold text-slate-800">0</span> tệp
+                Đang xử lý: <span id="active-transfers-count" class="font-semibold text-slate-800 font-mono">0</span> tiến trình
             </div>
         </div>
         <div class="flex-1 overflow-y-auto p-2">
             <div id="transfer-empty-state" class="h-full flex flex-col items-center justify-center text-slate-400 text-xs italic">
-                <span>Không có tệp nào đang truyền. Nhấn "Upload" hoặc "Download" ở bảng trên để thử nghiệm truyền dữ liệu theo khối.</span>
+                <span>Hàng đợi rỗng. Bấm "Upload" ở cột Local hoặc "Tải" ở cột Remote để mô phỏng truyền dữ liệu phân khối 64 KB.</span>
             </div>
             <div id="transfer-list" class="space-y-2">
                 <!-- Transfer rows injected here -->
@@ -270,34 +293,34 @@
         </div>
     </section>
 
-    <!-- 6. FOOTER / STATUS BAR -->
+    <!-- 7. FOOTER / STATUS BAR -->
     <footer class="bg-slate-100 text-slate-500 text-[11px] px-4 py-1.5 border-t border-slate-200 flex items-center justify-between">
         <div>
-            <span>Định dạng Header: </span>
+            <span>Định dạng gói: </span>
             <span class="font-mono font-medium text-slate-700">FSPHeader (42B)</span> + <span class="font-mono font-medium text-slate-700">FileChunkHeader (88B)</span>
         </div>
         <div class="flex items-center gap-4">
             <span>Kiểm tra: <span class="font-mono text-emerald-600 font-semibold">IEEE 802.3 CRC32</span></span>
-            <span>Mô hình phân quyền: <span class="font-mono text-blue-600 font-semibold">Linux 9-bit + Sharing Levels (Bước 0–7)</span></span>
+            <span>Phân quyền: <span class="font-mono text-blue-600 font-semibold">Linux 9-bit + Sharing Levels (Bước 0–7)</span></span>
         </div>
     </footer>
 
     <!-- ========================================================================= -->
-    <!-- MODAL 1: HỘP THOẠI PHÂN QUYỀN (PERM_SET / PERM_GET — SRS §6.3) -->
+    <!-- MODAL 1: HỘP THOẠI PHÂN QUYỀN (PERM_SET / PERM_GET — SRS §6.3 & FR-6) -->
     <!-- ========================================================================= -->
     <div id="modal-permission" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-150">
             <div class="bg-slate-100 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <i data-lucide="shield-check" class="w-4 h-4 text-blue-600"></i>
-                    <h3 class="text-sm font-semibold text-slate-800">Phân quyền Truy cập & Mức chia sẻ</h3>
+                    <h3 class="text-sm font-semibold text-slate-800">Phân quyền Truy cập (PERM_SET / PERM_GET)</h3>
                 </div>
                 <button onclick="closePermissionModal()" class="text-slate-400 hover:text-slate-600">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
             
-            <div class="p-4 space-y-4 text-xs">
+            <div class="p-4 space-y-3.5 text-xs">
                 <!-- File Target Info -->
                 <div class="bg-slate-50 p-2.5 rounded border border-slate-200">
                     <div class="flex justify-between py-0.5">
@@ -306,13 +329,13 @@
                     </div>
                     <div class="flex justify-between py-0.5">
                         <span class="text-slate-500">Chủ sở hữu:</span>
-                        <span id="perm-modal-owner" class="font-mono text-slate-700">an (uid: 2, group: 2)</span>
+                        <span id="perm-modal-owner" class="font-mono text-slate-700">an</span>
                     </div>
                 </div>
 
                 <!-- 9-Bit Linux Permission Grid -->
                 <div>
-                    <label class="block font-medium text-slate-700 mb-1.5">Quyền 9-bit kiểu Linux (rws):</label>
+                    <label class="block font-medium text-slate-700 mb-1">Quyền 9-bit kiểu Linux (rws):</label>
                     <div class="grid grid-cols-4 gap-2 text-center bg-slate-50 p-2 rounded border border-slate-200">
                         <span class="text-slate-400 font-medium">Đối tượng</span>
                         <span class="text-slate-600 font-medium">Đọc (r)</span>
@@ -321,58 +344,58 @@
 
                         <!-- Owner -->
                         <span class="text-left font-medium text-slate-700">Chủ (Owner)</span>
-                        <div><input type="checkbox" id="perm-ur" checked class="rounded border-slate-300 text-blue-600"></div>
-                        <div><input type="checkbox" id="perm-uw" checked class="rounded border-slate-300 text-blue-600"></div>
-                        <div><input type="checkbox" id="perm-us" checked class="rounded border-slate-300 text-blue-600"></div>
+                        <div><input type="checkbox" id="perm-ur" checked class="rounded text-blue-600"></div>
+                        <div><input type="checkbox" id="perm-uw" checked class="rounded text-blue-600"></div>
+                        <div><input type="checkbox" id="perm-us" checked class="rounded text-blue-600"></div>
 
                         <!-- Group -->
                         <span class="text-left font-medium text-slate-700">Nhóm (Group)</span>
-                        <div><input type="checkbox" id="perm-gr" checked class="rounded border-slate-300 text-blue-600"></div>
-                        <div><input type="checkbox" id="perm-gw" class="rounded border-slate-300 text-blue-600"></div>
-                        <div><input type="checkbox" id="perm-gs" class="rounded border-slate-300 text-blue-600"></div>
+                        <div><input type="checkbox" id="perm-gr" checked class="rounded text-blue-600"></div>
+                        <div><input type="checkbox" id="perm-gw" class="rounded text-blue-600"></div>
+                        <div><input type="checkbox" id="perm-gs" class="rounded text-blue-600"></div>
 
                         <!-- Others -->
                         <span class="text-left font-medium text-slate-700">Người khác</span>
-                        <div><input type="checkbox" id="perm-or" class="rounded border-slate-300 text-blue-600"></div>
-                        <div><input type="checkbox" id="perm-ow" class="rounded border-slate-300 text-blue-600"></div>
-                        <div><input type="checkbox" id="perm-os" class="rounded border-slate-300 text-blue-600"></div>
+                        <div><input type="checkbox" id="perm-or" class="rounded text-blue-600"></div>
+                        <div><input type="checkbox" id="perm-ow" class="rounded text-blue-600"></div>
+                        <div><input type="checkbox" id="perm-os" class="rounded text-blue-600"></div>
                     </div>
                 </div>
 
                 <!-- Sharing Level Radio Buttons -->
                 <div>
-                    <label class="block font-medium text-slate-700 mb-1.5">Mức độ chia sẻ (Sharing Level):</label>
+                    <label class="block font-medium text-slate-700 mb-1">Mức độ chia sẻ (Sharing Level):</label>
                     <div class="space-y-1.5 bg-slate-50 p-2.5 rounded border border-slate-200">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="sharing-level" value="0" class="text-blue-600">
+                        <label class="flex items-start gap-2 cursor-pointer">
+                            <input type="radio" name="sharing-level" value="PRIVATE" class="mt-0.5 text-blue-600">
                             <div>
-                                <span class="font-medium text-slate-800">Riêng tư (PRIVATE - 0)</span>
-                                <span class="block text-[11px] text-slate-500">Chỉ chủ sở hữu và Admin được truy cập. Khóa hoàn toàn người ngoài.</span>
+                                <span class="font-semibold text-slate-800">Riêng tư (PRIVATE - 0)</span>
+                                <span class="block text-[11px] text-slate-500">Chỉ chủ sở hữu và Admin được truy cập. Khóa hoàn toàn người ngoài (bước 3 can_access).</span>
                             </div>
                         </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="sharing-level" value="1" checked class="text-blue-600">
+                        <label class="flex items-start gap-2 cursor-pointer">
+                            <input type="radio" name="sharing-level" value="SHARED" checked class="mt-0.5 text-blue-600">
                             <div>
-                                <span class="font-medium text-slate-800">Chia sẻ (SHARED - 1)</span>
-                                <span class="block text-[11px] text-slate-500">Cho phép cùng nhóm và danh sách user được chỉ định (share_list).</span>
+                                <span class="font-semibold text-slate-800 text-blue-700">Chia sẻ (SHARED - 1)</span>
+                                <span class="block text-[11px] text-slate-500">Cho phép cùng nhóm và danh sách user được cấp quyền cụ thể bên dưới (share_list).</span>
                             </div>
                         </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="sharing-level" value="2" class="text-blue-600">
+                        <label class="flex items-start gap-2 cursor-pointer">
+                            <input type="radio" name="sharing-level" value="PUBLIC" class="mt-0.5 text-blue-600">
                             <div>
-                                <span class="font-medium text-slate-800">Công khai (PUBLIC - 2)</span>
-                                <span class="block text-[11px] text-slate-500">Tất cả người dùng đã đăng nhập đều có quyền Đọc (READ).</span>
+                                <span class="font-semibold text-slate-800 text-emerald-700">Công khai (PUBLIC - 2)</span>
+                                <span class="block text-[11px] text-slate-500">Tất cả người dùng đã đăng nhập đều có quyền Đọc (READ = 4).</span>
                             </div>
                         </label>
                     </div>
                 </div>
 
                 <!-- Specific Share List -->
-                <div>
-                    <label class="block font-medium text-slate-700 mb-1">Chia sẻ cụ thể (share_list theo username):</label>
+                <div id="container-share-list">
+                    <label class="block font-medium text-slate-700 mb-1">Danh sách chia sẻ riêng (share_list):</label>
                     <div class="border border-slate-200 rounded overflow-hidden">
                         <div id="modal-share-list" class="divide-y divide-slate-100 max-h-24 overflow-y-auto bg-white">
-                            <!-- Populated by JS -->
+                            <!-- Injected by JS -->
                         </div>
                         <div class="p-1.5 bg-slate-50 border-t border-slate-200 flex items-center gap-1.5">
                             <input type="text" id="share-new-user" placeholder="username (vd: binh)" class="flex-1 bg-white border border-slate-300 rounded px-2 py-1 text-xs">
@@ -381,7 +404,7 @@
                                 <option value="rw">Đọc & Ghi (rw-)</option>
                                 <option value="rws">Toàn quyền (rws)</option>
                             </select>
-                            <button onclick="addUserToShareList()" class="bg-slate-800 text-white px-2 py-1 rounded text-xs hover:bg-slate-700 transition">Thêm</button>
+                            <button onclick="addUserToShareList()" class="bg-slate-800 text-white px-2.5 py-1 rounded text-xs hover:bg-slate-700 transition">Thêm</button>
                         </div>
                     </div>
                 </div>
@@ -389,13 +412,13 @@
                 <!-- Recursive Option -->
                 <div class="pt-1">
                     <label class="flex items-center gap-2 text-slate-700 cursor-pointer">
-                        <input type="checkbox" id="perm-recursive" checked class="rounded border-slate-300 text-blue-600">
-                        <span class="font-medium">Áp dụng cho toàn bộ tệp/thư mục bên trong (recursive = true)</span>
+                        <input type="checkbox" id="perm-recursive" checked class="rounded text-blue-600">
+                        <span class="font-medium">Áp dụng đệ quy cho toàn bộ thư mục con (recursive = true)</span>
                     </label>
                 </div>
             </div>
 
-            <div class="bg-slate-50 px-4 py-3 border-t border-slate-200 flex justify-end gap-2 text-xs">
+            <div class="bg-slate-50 px-4 py-2.5 border-t border-slate-200 flex justify-end gap-2 text-xs">
                 <button onclick="closePermissionModal()" class="px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 transition">Hủy</button>
                 <button onclick="savePermissions()" class="px-3 py-1.5 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition shadow-xs">Lưu quyền (PERM_SET)</button>
             </div>
@@ -403,7 +426,7 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- MODAL 2: HỘP THOẠI TÌM KIẾM TỆP (SEARCH_QUERY — SRS §6.4 & FR-5) -->
+    <!-- MODAL 2: HỘP THOẠI TÌM KIẾM TỆP (SEARCH_QUERY — SRS FR-5) -->
     <!-- ========================================================================= -->
     <div id="modal-search" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-150">
@@ -418,10 +441,9 @@
             </div>
 
             <div class="p-4 space-y-3 text-xs">
-                <!-- Search Inputs -->
                 <div class="flex gap-2">
                     <div class="flex-1">
-                        <label class="block text-slate-500 mb-1">Từ khóa tìm kiếm:</label>
+                        <label class="block text-slate-500 mb-1">Từ khóa (substring):</label>
                         <input type="text" id="search-keyword" placeholder="Ví dụ: baocao, slide..." class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none">
                     </div>
                     <div class="w-24">
@@ -435,10 +457,10 @@
                     </div>
                 </div>
 
-                <!-- Info Box about Security Filter -->
-                <div class="p-2 bg-blue-50 border border-blue-200 rounded text-blue-800 text-[11px] flex items-center gap-2">
-                    <i data-lucide="shield-alert" class="w-4 h-4 shrink-0 text-blue-600"></i>
-                    <span><strong>Lọc quyền bảo mật (Zero-Leak):</strong> Kết quả tìm kiếm chỉ hiển thị các tệp bạn có quyền <code>READ</code>. Các tệp <code>PRIVATE</code> của người khác sẽ hoàn toàn bị ẩn.</span>
+                <!-- Explanation of current persona's search scope -->
+                <div id="search-persona-notice" class="p-2 bg-slate-50 border border-slate-200 rounded text-slate-700 text-[11px] flex items-center gap-2">
+                    <i data-lucide="info" class="w-4 h-4 shrink-0 text-blue-600"></i>
+                    <span id="search-persona-notice-text">Bạn đang tìm kiếm dưới danh nghĩa: <strong>an</strong></span>
                 </div>
 
                 <!-- Results List -->
@@ -451,12 +473,13 @@
                                     <th class="py-1.5 px-2.5">Đường dẫn tệp ảo</th>
                                     <th class="py-1.5 px-2 text-right">Kích thước</th>
                                     <th class="py-1.5 px-2">Chủ</th>
+                                    <th class="py-1.5 px-2 text-center">Mức</th>
                                     <th class="py-1.5 px-2 text-center">Tải về</th>
                                 </tr>
                             </thead>
                             <tbody id="search-results-table" class="divide-y divide-slate-100">
                                 <tr>
-                                    <td colspan="4" class="p-4 text-center text-slate-400 italic">Nhập từ khóa và nhấn "Tìm kiếm" để tra cứu kho server.</td>
+                                    <td colspan="5" class="p-4 text-center text-slate-400 italic">Nhập từ khóa và nhấn "Tìm kiếm" để tra cứu kho server.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -465,14 +488,14 @@
             </div>
 
             <div class="bg-slate-50 px-4 py-2.5 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500">
-                <span id="search-result-count">0 kết quả phù hợp</span>
+                <span id="search-result-count">0 kết quả</span>
                 <button onclick="closeSearchModal()" class="px-3 py-1 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 transition">Đóng</button>
             </div>
         </div>
     </div>
 
     <!-- ========================================================================= -->
-    <!-- MODAL 3: TẠO THƯ MỤC MỚI (DIR_MKDIR — SRS FR-2.4) -->
+    <!-- MODAL 3: TẠO THƯ MỤC MỚI (DIR_MKDIR) -->
     <!-- ========================================================================= -->
     <div id="modal-mkdir" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl border border-slate-200 w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-150">
@@ -485,7 +508,7 @@
             <div class="p-4 space-y-2 text-xs">
                 <label class="block text-slate-600 font-medium">Tên thư mục mới:</label>
                 <input type="text" id="new-folder-name" placeholder="TenThuMuc" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs font-mono">
-                <span class="text-[11px] text-slate-400 block">Thư mục tạo ra sẽ được gán quyền mặc định 0755 và mức PRIVATE cho bạn.</span>
+                <span class="text-[11px] text-slate-400 block">Thư mục tạo ra sẽ được gán quyền 0755 và mức PRIVATE cho bạn.</span>
             </div>
             <div class="bg-slate-50 px-4 py-2.5 border-t border-slate-200 flex justify-end gap-2 text-xs">
                 <button onclick="closeNewFolderModal()" class="px-3 py-1 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 transition">Hủy</button>
@@ -495,47 +518,88 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- JAVASCRIPT: LOGIC MÔ PHỎNG HỆ THỐNG FSP VÀ KỊCH BẢN SRS §3.4 -->
+    <!-- JAVASCRIPT: LOGIC TOÀN DIỆN MÔ PHỎNG PERSONAS & PERMISSIONS -->
     <!-- ========================================================================= -->
     <script>
-        // --- 1. DỮ LIỆU GIẢ LẬP HỆ THỐNG FILE VÀ QUYỀN (VFS & PERMISSIONS) ---
+        // --- 1. PERSONAS VÀ LOCAL CONTEXT ĐỘC LẬP TỪNG NGƯỜI DÙNG ---
         const USERS = {
-            'an':    { id: 2, username: 'an', group_id: 2, name: 'Trần An' },
-            'binh':  { id: 3, username: 'binh', group_id: 3, name: 'Lê Bình' },
-            'chi':   { id: 4, username: 'chi', group_id: 4, name: 'Nguyễn Chi' },
-            'admin': { id: 1, username: 'admin', group_id: 1, name: 'Quản trị viên' }
+            'an': { 
+                id: 2, username: 'an', group_id: 2, name: 'Trần An',
+                localPath: 'C:/Users/an/Documents/',
+                localDesc: 'Máy tính xách tay cá nhân của An (Nhóm trưởng)',
+                localFiles: [
+                    { name: 'BaoCao_Nhom7_Draft.docx', isDir: false, size: '2.4 MB', bytes: 2516582 },
+                    { name: 'slide_thuyet_trinh.pptx', isDir: false, size: '4.1 MB', bytes: 4300000 },
+                    { name: 'du_lieu_thi_nghiem.zip', isDir: false, size: '45.0 MB', bytes: 47185920 },
+                    { name: 'Code_C11_Test/', isDir: true, size: '--', bytes: 0 }
+                ]
+            },
+            'binh': { 
+                id: 3, username: 'binh', group_id: 3, name: 'Lê Bình',
+                localPath: 'C:/Users/binh/Downloads/',
+                localDesc: 'Máy trạm của Bình (Thành viên kiểm thử)',
+                localFiles: [
+                    { name: 'phan_bien_do_an.docx', isDir: false, size: '1.1 MB', bytes: 1153433 },
+                    { name: 'test_cases_suite.c', isDir: false, size: '18 KB', bytes: 18432 },
+                    { name: 'log_kiem_thu_lan_1.txt', isDir: false, size: '4 KB', bytes: 4096 }
+                ]
+            },
+            'chi': { 
+                id: 4, username: 'chi', group_id: 4, name: 'Nguyễn Chi',
+                localPath: 'C:/Users/chi/Desktop/',
+                localDesc: 'Máy tính cá nhân của Chi (Sinh viên lớp khác)',
+                localFiles: [
+                    { name: 'bai_tap_lon_khac.pdf', isDir: false, size: '3.2 MB', bytes: 3355443 },
+                    { name: 'anh_nhom_lop.png', isDir: false, size: '5.8 MB', bytes: 6081740 }
+                ]
+            },
+            'admin': { 
+                id: 1, username: 'admin', group_id: 1, name: 'Quản trị viên Hệ thống',
+                localPath: 'C:/Users/admin/Workstation/',
+                localDesc: 'Máy chủ quản trị bảo mật & kiểm toán',
+                localFiles: [
+                    { name: 'backup_users_2026.json', isDir: false, size: '120 KB', bytes: 122880 },
+                    { name: 'system_health_audit.sh', isDir: false, size: '8 KB', bytes: 8192 }
+                ]
+            }
         };
 
         let currentUser = USERS['an'];
         let currentRemotePath = '/home/an';
-        let currentLocalPath = 'C:/Users/an/Documents/';
+        let remoteViewMode = 'vfs'; // 'vfs' | 'shared' | 'public'
 
-        // Mock Local Files
-        let localFiles = [
-            { name: 'BaoCao_Nhom7_Draft.docx', isDir: false, size: '2.4 MB', bytes: 2516582 },
-            { name: 'slide_thuyet_trinh.pptx', isDir: false, size: '4.1 MB', bytes: 4300000 },
-            { name: 'du_lieu_thi_nghiem.zip', isDir: false, size: '45.0 MB', bytes: 47185920 },
-            { name: 'SourceCode_C11/', isDir: true, size: '--', bytes: 0 }
-        ];
-
-        // Mock Remote File System (Server)
+        // --- 2. HỆ THỐNG FILE TRÊN SERVER (REMOTE VFS) VỚI CÁC MỨC QUYỀN MẪU ---
         let remoteFS = [
+            // Thư mục của An (Được An chia sẻ riêng cho Bình)
             { path: '/home/an/BaoCao', name: 'BaoCao', isDir: true, size: '--', bytes: 0, owner: 'an', perm: '0755', level: 'SHARED', share_list: [{ user: 'binh', mask: 'r' }] },
             { path: '/home/an/BaoCao/baocao_v1.pdf', name: 'baocao_v1.pdf', isDir: false, size: '1.2 MB', bytes: 1258291, owner: 'an', perm: '0644', level: 'SHARED', share_list: [{ user: 'binh', mask: 'r' }] },
+            { path: '/home/an/BaoCao/slide_v1.pptx', name: 'slide_v1.pptx', isDir: false, size: '3.8 MB', bytes: 3984588, owner: 'an', perm: '0644', level: 'SHARED', share_list: [{ user: 'binh', mask: 'r' }] },
+            // File riêng tư tuyệt đối của An
             { path: '/home/an/data_secret.zip', name: 'data_secret.zip', isDir: false, size: '18.5 MB', bytes: 19398656, owner: 'an', perm: '0600', level: 'PRIVATE', share_list: [] },
+            
+            // Thư mục của Bình
             { path: '/home/binh', name: 'binh', isDir: true, size: '--', bytes: 0, owner: 'binh', perm: '0755', level: 'PRIVATE', share_list: [] },
-            { path: '/home/binh/ke_hoach_tuan.txt', name: 'ke_hoach_tuan.txt', isDir: false, size: '14 KB', bytes: 14336, owner: 'binh', perm: '0644', level: 'PRIVATE', share_list: [] },
+            { path: '/home/binh/ke_hoach_test.txt', name: 'ke_hoach_test.txt', isDir: false, size: '14 KB', bytes: 14336, owner: 'binh', perm: '0644', level: 'PRIVATE', share_list: [] },
+
+            // Thư mục của Chi
+            { path: '/home/chi', name: 'chi', isDir: true, size: '--', bytes: 0, owner: 'chi', perm: '0755', level: 'PRIVATE', share_list: [] },
+            { path: '/home/chi/tai_lieu_ca_nhan.docx', name: 'tai_lieu_ca_nhan.docx', isDir: false, size: '80 KB', bytes: 81920, owner: 'chi', perm: '0644', level: 'PRIVATE', share_list: [] },
+
+            // Khu vực Công khai (PUBLIC - Mọi người dùng đều đọc được)
             { path: '/public', name: 'public', isDir: true, size: '--', bytes: 0, owner: 'admin', perm: '0755', level: 'PUBLIC', share_list: [] },
-            { path: '/public/HuongDan_MonHoc.pdf', name: 'HuongDan_MonHoc.pdf', isDir: false, size: '850 KB', bytes: 870400, owner: 'admin', perm: '0644', level: 'PUBLIC', share_list: [] }
+            { path: '/public/HuongDan_DoAn_Topic6.pdf', name: 'HuongDan_DoAn_Topic6.pdf', isDir: false, size: '850 KB', bytes: 870400, owner: 'admin', perm: '0644', level: 'PUBLIC', share_list: [] },
+            { path: '/public/BangPhanCong_NhiemVu.xlsx', name: 'BangPhanCong_NhiemVu.xlsx', isDir: false, size: '320 KB', bytes: 327680, owner: 'admin', perm: '0644', level: 'PUBLIC', share_list: [] }
         ];
 
         let selectedLocalIndex = 0;
         let selectedRemotePath = null;
-        let activeTransfers = [];
         let transferIdCounter = 1000;
 
-        // --- 2. THUẬT TOÁN QUYẾT ĐỊNH QUYỀN (CAN_ACCESS BƯỚC 0–7 SRS FR-6) ---
+        // --- 3. THUẬT TOÁN QUYẾT ĐỊNH QUYỀN (CAN_ACCESS BƯỚC 0–7 SRS FR-6) ---
         function checkCanAccess(user, file, action) {
+            // Bước 0: Không có file/user -> từ chối
+            if (!file || !user) return false;
+
             // Bước 1: Admin toàn quyền
             if (user.id === 1 || user.username === 'admin') return true;
 
@@ -545,7 +609,7 @@
                 if (action === 'WRITE') return file.perm.charAt(1) === '6' || file.perm.charAt(1) === '7' || file.perm.charAt(1) === '2';
             }
 
-            // Bước 3: PRIVATE -> Từ chối mọi người khác
+            // Bước 3: PRIVATE -> Từ chối 100% mọi người khác
             if (file.level === 'PRIVATE') return false;
 
             // Bước 4: Cùng nhóm
@@ -553,7 +617,7 @@
                 return true;
             }
 
-            // Bước 5: PUBLIC -> Chỉ cho đọc
+            // Bước 5: PUBLIC -> Chỉ cho đọc (READ)
             if (file.level === 'PUBLIC') {
                 return action === 'READ';
             }
@@ -572,57 +636,126 @@
             return false;
         }
 
-        // --- 3. ĐIỀU KHIỂN GIAO DIỆN & RENDER DỮ LIỆU ---
+        // Đánh giá quyền của User hiện tại trên file để hiển thị Badge trực quan
+        function getUserAccessLabel(user, file) {
+            if (user.username === 'admin') {
+                return { text: 'Toàn quyền (Admin)', color: 'bg-amber-100 text-amber-800 border-amber-300' };
+            }
+            if (user.username === file.owner) {
+                return { text: 'Chủ sở hữu (Owner)', color: 'bg-blue-100 text-blue-800 border-blue-300' };
+            }
+            if (file.level === 'PRIVATE') {
+                return { text: 'Bị từ chối (403 Private)', color: 'bg-slate-100 text-slate-500 border-slate-200' };
+            }
+            if (file.level === 'PUBLIC') {
+                return { text: 'Công khai (Chỉ đọc: r--)', color: 'bg-emerald-100 text-emerald-800 border-emerald-300' };
+            }
+            if (file.level === 'SHARED') {
+                const match = file.share_list.find(s => s.user === user.username);
+                if (match) {
+                    let desc = match.mask === 'r' ? 'Được đọc (r--)' : (match.mask === 'rw' ? 'Đọc & Ghi (rw-)' : 'Toàn quyền (rws)');
+                    return { text: `Được share: ${desc}`, color: 'bg-purple-100 text-purple-800 border-purple-300 font-medium' };
+                }
+                return { text: 'Bị từ chối (Chưa được share)', color: 'bg-rose-50 text-rose-600 border-rose-200' };
+            }
+            return { text: 'Không có quyền', color: 'bg-slate-100 text-slate-500 border-slate-200' };
+        }
+
+        // --- 4. ĐIỀU KHIỂN GIAO DIỆN & RENDER ---
         function logProtocol(type, event, info) {
             const time = new Date().toTimeString().split(' ')[0];
             const typeStr = type === 'REQ' ? '<span class="text-blue-400">[REQ  0x01]</span>' : '<span class="text-emerald-400">[RESP 0x02]</span>';
             const logItem = `<div><span class="text-slate-500">[${time}]</span> ${typeStr} <span class="font-bold text-slate-200">${event}</span> ${info}</div>`;
             
-            const logConsole = document.getElementById('log-console-text');
-            logConsole.innerHTML = `${event}: ${info}`;
-            
+            document.getElementById('log-console-text').innerHTML = `${event}: ${info}`;
             const logHistory = document.getElementById('log-history');
             logHistory.innerHTML += logItem;
             logHistory.scrollTop = logHistory.scrollHeight;
         }
 
         function toggleLogDetail() {
-            const drawer = document.getElementById('full-log-drawer');
-            drawer.classList.toggle('hidden');
+            document.getElementById('full-log-drawer').classList.toggle('hidden');
         }
 
+        // CHUYỂN ĐỔI PERSONA: CẬP NHẬT CẢ LOCAL PATH LẪN REMOTE CONTEXT
         function switchUser(username) {
             currentUser = USERS[username];
             document.getElementById('status-username').value = username;
+            document.getElementById('session-token-badge').innerText = `tok_${username}_${Date.now().toString(16).slice(-4)}`;
 
             // Highlight button
             ['an', 'binh', 'chi', 'admin'].forEach(u => {
                 const btn = document.getElementById(`btn-user-${u}`);
                 if (u === username) {
-                    btn.className = "px-2.5 py-1 rounded text-xs font-medium transition bg-blue-600 text-white shadow-xs";
+                    btn.className = "px-3 py-1 rounded-md text-xs font-semibold transition bg-blue-600 text-white shadow-xs flex items-center gap-1.5";
                 } else {
-                    btn.className = "px-2.5 py-1 rounded text-xs font-medium text-slate-300 hover:text-white transition";
+                    btn.className = "px-3 py-1 rounded-md text-xs font-medium text-slate-300 hover:text-white transition flex items-center gap-1.5";
                 }
             });
 
-            // Adjust remote path
+            // Update Local Context
+            document.getElementById('local-user-title').innerText = `${currentUser.name} (${currentUser.username})`;
+            document.getElementById('local-context-desc').innerText = currentUser.localDesc;
+            document.getElementById('local-path-input').value = currentUser.localPath;
+
+            // Set initial remote path
             if (username === 'admin') {
                 currentRemotePath = '/';
             } else {
                 currentRemotePath = `/home/${username}`;
             }
 
-            logProtocol('REQ', 'AUTH_LOGIN', `{"username":"${username}"}`);
-            logProtocol('RESP', 'AUTH_LOGIN', `200 OK {"token":"token_${username}_${Date.now()}","home":"${currentRemotePath}"}`);
+            remoteViewMode = 'vfs';
+            updateRemoteViewTabs();
 
-            renderRemoteFiles();
+            logProtocol('REQ', 'AUTH_LOGIN', `{"username":"${username}"}`);
+            logProtocol('RESP', 'AUTH_LOGIN', `200 OK {"token":"${document.getElementById('session-token-badge').innerText}","home":"${currentRemotePath}"}`);
+
             renderLocalFiles();
+            renderRemoteFiles();
+            updateSharedBadgeCount();
+        }
+
+        function updateSharedBadgeCount() {
+            const count = remoteFS.filter(f => f.level === 'SHARED' && f.share_list.some(s => s.user === currentUser.username)).length;
+            document.getElementById('shared-badge-count').innerText = count;
+        }
+
+        function setRemoteViewMode(mode) {
+            remoteViewMode = mode;
+            updateRemoteViewTabs();
+            renderRemoteFiles();
+        }
+
+        function updateRemoteViewTabs() {
+            ['vfs', 'shared', 'public'].forEach(m => {
+                const tab = document.getElementById(`tab-view-${m}`);
+                if (m === remoteViewMode) {
+                    tab.className = "px-2.5 py-0.5 rounded bg-white text-slate-800 shadow-2xs font-semibold";
+                } else {
+                    tab.className = "px-2.5 py-0.5 rounded text-slate-600 hover:text-slate-900 transition flex items-center gap-1";
+                }
+            });
+
+            const notice = document.getElementById('remote-view-notice');
+            const noticeText = document.getElementById('remote-view-notice-text');
+            if (remoteViewMode === 'shared') {
+                notice.classList.remove('hidden');
+                noticeText.innerHTML = `<strong>Chế độ "Được chia sẻ cho tôi":</strong> Danh sách các tệp mà chủ sở hữu khác đã cấp quyền cụ thể cho <strong>${currentUser.username}</strong>.`;
+            } else if (remoteViewMode === 'public') {
+                notice.classList.remove('hidden');
+                noticeText.innerHTML = `<strong>Chế độ "Khu vực Công khai":</strong> Toàn bộ tệp <code>PUBLIC</code> (mọi người dùng đã đăng nhập đều có quyền ĐỌC).`;
+            } else {
+                notice.classList.add('hidden');
+            }
         }
 
         function renderLocalFiles() {
             const tbody = document.getElementById('local-file-table');
             tbody.innerHTML = '';
-            localFiles.forEach((file, index) => {
+            selectedLocalIndex = 0;
+
+            currentUser.localFiles.forEach((file, index) => {
                 const tr = document.createElement('tr');
                 tr.className = `hover:bg-slate-50 cursor-pointer ${selectedLocalIndex === index ? 'bg-blue-50/70' : ''}`;
                 tr.onclick = () => { selectedLocalIndex = index; renderLocalFiles(); };
@@ -638,7 +771,7 @@
                 `;
                 tbody.appendChild(tr);
             });
-            document.getElementById('local-summary').innerText = `${localFiles.length} mục`;
+            document.getElementById('local-summary').innerText = `${currentUser.localFiles.length} mục trên máy`;
             lucide.createIcons();
         }
 
@@ -647,37 +780,48 @@
             const pathInput = document.getElementById('remote-path-input');
             pathInput.value = currentRemotePath;
 
-            logProtocol('REQ', 'DIR_LIST', `{"token":"${currentUser.username}_token","path":"${currentRemotePath}"}`);
+            let items = [];
 
-            // Filter items within current directory
-            const items = remoteFS.filter(f => {
-                if (currentRemotePath === '/') {
-                    return f.path.split('/').length === 2 && f.path !== '/';
-                }
-                const prefix = currentRemotePath + '/';
-                if (!f.path.startsWith(prefix)) return false;
-                const rest = f.path.substring(prefix.length);
-                return !rest.includes('/');
-            });
+            if (remoteViewMode === 'shared') {
+                // View all files shared with this user across entire server
+                items = remoteFS.filter(f => f.level === 'SHARED' && f.share_list.some(s => s.user === currentUser.username));
+                logProtocol('REQ', 'SEARCH_SHARED', `{"user":"${currentUser.username}"}`);
+            } else if (remoteViewMode === 'public') {
+                // View all public files
+                items = remoteFS.filter(f => f.level === 'PUBLIC');
+                logProtocol('REQ', 'SEARCH_PUBLIC', `{}`);
+            } else {
+                // Standard VFS Directory Traversal
+                logProtocol('REQ', 'DIR_LIST', `{"path":"${currentRemotePath}"}`);
+                items = remoteFS.filter(f => {
+                    if (currentRemotePath === '/') {
+                        return f.path.split('/').length === 2 && f.path !== '/';
+                    }
+                    const prefix = currentRemotePath + '/';
+                    if (!f.path.startsWith(prefix)) return false;
+                    const rest = f.path.substring(prefix.length);
+                    return !rest.includes('/');
+                });
+            }
 
             tbody.innerHTML = '';
             let visibleCount = 0;
 
             items.forEach(file => {
+                const access = getUserAccessLabel(currentUser, file);
                 const canRead = checkCanAccess(currentUser, file, 'READ');
-                
-                // If user has zero access to private file/dir of others, fail-closed
-                if (!canRead && file.level === 'PRIVATE' && file.owner !== currentUser.username && currentUser.username !== 'admin') {
+                const canWrite = checkCanAccess(currentUser, file, 'WRITE');
+                const canShare = checkCanAccess(currentUser, file, 'SHARE');
+
+                // Fail-closed hiding: If file is PRIVATE of another user, hide completely in VFS list
+                if (remoteViewMode === 'vfs' && file.level === 'PRIVATE' && file.owner !== currentUser.username && currentUser.username !== 'admin') {
                     return; // Skip rendering
                 }
 
                 visibleCount++;
                 const tr = document.createElement('tr');
                 tr.className = `hover:bg-slate-50 cursor-pointer ${selectedRemotePath === file.path ? 'bg-blue-50/70' : ''}`;
-                tr.onclick = () => { 
-                    selectedRemotePath = file.path; 
-                    renderRemoteFiles(); 
-                };
+                tr.onclick = () => { selectedRemotePath = file.path; renderRemoteFiles(); };
                 tr.ondblclick = () => {
                     if (file.isDir) {
                         currentRemotePath = file.path;
@@ -688,19 +832,26 @@
                 const icon = file.isDir ? '<i data-lucide="folder" class="w-3.5 h-3.5 text-blue-500 inline mr-1.5"></i>' : '<i data-lucide="file-text" class="w-3.5 h-3.5 text-slate-400 inline mr-1.5"></i>';
 
                 let levelBadge = '';
-                if (file.level === 'PRIVATE') levelBadge = '<span class="px-1.5 py-0.5 text-[10px] bg-slate-100 text-slate-600 rounded font-mono">PRV</span>';
-                else if (file.level === 'SHARED') levelBadge = '<span class="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-700 rounded font-mono font-semibold">SHR</span>';
-                else levelBadge = '<span class="px-1.5 py-0.5 text-[10px] bg-emerald-100 text-emerald-700 rounded font-mono">PUB</span>';
+                if (file.level === 'PRIVATE') levelBadge = '<span class="px-1.5 py-0.5 text-[10px] bg-slate-100 text-slate-700 rounded font-mono border border-slate-200">PRIVATE</span>';
+                else if (file.level === 'SHARED') levelBadge = '<span class="px-1.5 py-0.5 text-[10px] bg-purple-100 text-purple-800 rounded font-mono font-bold border border-purple-200">SHARED</span>';
+                else levelBadge = '<span class="px-1.5 py-0.5 text-[10px] bg-emerald-100 text-emerald-800 rounded font-mono font-bold border border-emerald-200">PUBLIC</span>';
 
                 tr.innerHTML = `
-                    <td class="py-1.5 px-3 font-medium text-slate-800">${icon} ${file.name}</td>
+                    <td class="py-1.5 px-3 font-medium text-slate-800">
+                        ${icon} ${file.name}
+                        ${remoteViewMode !== 'vfs' ? `<span class="block text-[10px] text-slate-400 font-mono">${file.path}</span>` : ''}
+                    </td>
                     <td class="py-1.5 px-2 text-right font-mono text-slate-500">${file.size}</td>
                     <td class="py-1.5 px-2 font-mono text-center text-slate-600">${file.perm}</td>
                     <td class="py-1.5 px-2 text-center">${levelBadge}</td>
                     <td class="py-1.5 px-2 font-mono text-slate-600">${file.owner}</td>
+                    <td class="py-1.5 px-2 text-center">
+                        <span class="inline-block px-2 py-0.5 text-[10px] rounded border ${access.color}">${access.text}</span>
+                    </td>
                     <td class="py-1.5 px-3 text-center">
                         <button onclick="event.stopPropagation(); startDownloadFile('${file.path}')" class="text-blue-600 hover:text-blue-800 mr-2 font-medium">Tải</button>
-                        <button onclick="event.stopPropagation(); openPermissionModal('${file.path}')" class="text-slate-600 hover:text-slate-800">Quyền</button>
+                        <button onclick="event.stopPropagation(); tryDeleteFile('${file.path}')" class="text-rose-600 hover:text-rose-800 mr-2 font-medium">Xóa</button>
+                        <button onclick="event.stopPropagation(); openPermissionModal('${file.path}')" class="text-slate-600 hover:text-slate-800 font-medium">Quyền</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -723,12 +874,67 @@
         }
 
         function navigateLocal(dest) {
-            // Mock local navigation
-            logProtocol('LOCAL', 'DIR_CHANGE', '..');
+            alert('Máy cục bộ đang ở thư mục gốc của người dùng: ' + currentUser.localPath);
         }
 
-        // --- 4. TRUYỀN DỮ LIỆU & TIẾN ĐỘ CHUNKING 64KB (SRS FR-3, FR-7.4) ---
+        // --- 5. KIỂM THỬ THAO TÁC CÓ BẢO VỆ QUYỀN (WRITE / DELETE / DOWNLOAD) ---
+        function tryDeleteFile(filePath) {
+            const file = remoteFS.find(f => f.path === filePath);
+            if (!file) return;
+
+            logProtocol('REQ', 'FS_DELETE', `{"path":"${filePath}"}`);
+
+            // Check WRITE permission
+            if (!checkCanAccess(currentUser, file, 'WRITE')) {
+                alert(`⛔ TỪ CHỐI 403 FORBIDDEN:\nBạn (${currentUser.username}) KHÔNG có quyền GHI/XÓA (WRITE) trên tệp "${file.name}".\n\nQuyền hiện tại: ${getUserAccessLabel(currentUser, file).text}`);
+                logProtocol('RESP', 'FS_DELETE', `403 FORBIDDEN {"error":"Thiếu quyền WRITE"}`);
+                return;
+            }
+
+            if (confirm(`Bạn có chắc muốn xóa tệp "${file.name}"?`)) {
+                remoteFS = remoteFS.filter(f => f.path !== filePath);
+                renderRemoteFiles();
+                logProtocol('RESP', 'FS_DELETE', `200 OK {"path":"${filePath}"}`);
+                alert(`Đã xóa thành công tệp "${file.name}"!`);
+            }
+        }
+
+        function startDownloadFile(filePath) {
+            const file = remoteFS.find(f => f.path === filePath);
+            if (!file) return;
+
+            logProtocol('REQ', 'FILE_DOWNLOAD_REQ', `{"path":"${filePath}"}`);
+
+            // Check READ permission
+            if (!checkCanAccess(currentUser, file, 'READ')) {
+                alert(`⛔ TỪ CHỐI 403 FORBIDDEN:\nBạn (${currentUser.username}) KHÔNG có quyền ĐỌC (READ) tệp này!\n\nTệp được bảo vệ ở mức ${file.level} bởi chủ sở hữu [${file.owner}].`);
+                logProtocol('RESP', 'FILE_DOWNLOAD_REQ', '403 FORBIDDEN {"error":"Từ chối truy cập"}');
+                return;
+            }
+
+            const transferId = ++transferIdCounter;
+            logProtocol('RESP', 'FILE_DOWNLOAD_REQ', `200 OK {"transfer_id":${transferId},"size":${file.bytes}}`);
+
+            addTransferToQueue(transferId, 'DOWNLOAD', file.name, file.size, file.bytes, () => {
+                logProtocol('INFO', 'DOWNLOAD_COMPLETE', `Tệp đã lưu an toàn vào ${currentUser.localPath}${file.name}`);
+                // Add to current user's local files if not exists
+                if (!currentUser.localFiles.some(f => f.name === file.name)) {
+                    currentUser.localFiles.push({ name: file.name, isDir: file.isDir, size: file.size, bytes: file.bytes });
+                    renderLocalFiles();
+                }
+            });
+        }
+
         function startUploadFile(name, sizeStr, totalBytes) {
+            const targetDir = remoteFS.find(f => f.path === currentRemotePath);
+            
+            // Check write permission on parent folder
+            if (targetDir && !checkCanAccess(currentUser, targetDir, 'WRITE')) {
+                alert(`⛔ TỪ CHỐI 403 FORBIDDEN:\nBạn (${currentUser.username}) không có quyền GHI vào thư mục "${targetDir.path}"!`);
+                logProtocol('RESP', 'FILE_UPLOAD_REQ', `403 FORBIDDEN {"error":"Không có quyền ghi vào thư mục cha"}`);
+                return;
+            }
+
             const transferId = ++transferIdCounter;
             const targetPath = `${currentRemotePath}/${name}`.replace('//', '/');
 
@@ -736,7 +942,6 @@
             logProtocol('RESP', 'FILE_UPLOAD_REQ', `200 OK {"transfer_id":${transferId},"total_chunks":${Math.ceil(totalBytes / 65536)}}`);
 
             addTransferToQueue(transferId, 'UPLOAD', name, sizeStr, totalBytes, () => {
-                // When complete, add to remoteFS
                 remoteFS.push({
                     path: targetPath,
                     name: name,
@@ -754,53 +959,30 @@
             });
         }
 
-        function startDownloadFile(filePath) {
-            const file = remoteFS.find(f => f.path === filePath);
-            if (!file) return;
-
-            // Check permission
-            if (!checkCanAccess(currentUser, file, 'READ')) {
-                alert(`LỖI 403 FORBIDDEN: Bạn (${currentUser.username}) không có quyền ĐỌC tệp này!`);
-                logProtocol('RESP', 'FILE_DOWNLOAD_REQ', '403 FORBIDDEN {"error":"Quyền bị từ chối"}');
-                return;
-            }
-
-            const transferId = ++transferIdCounter;
-            logProtocol('REQ', 'FILE_DOWNLOAD_REQ', `{"path":"${filePath}"}`);
-            logProtocol('RESP', 'FILE_DOWNLOAD_REQ', `200 OK {"transfer_id":${transferId},"size":${file.bytes}}`);
-
-            addTransferToQueue(transferId, 'DOWNLOAD', file.name, file.size, file.bytes, () => {
-                logProtocol('INFO', 'DOWNLOAD_COMPLETE', `Đã lưu vào storage/client_downloads/${file.name}`);
-            });
-        }
-
         function uploadSelectedLocalFile() {
-            const file = localFiles[selectedLocalIndex];
+            const file = currentUser.localFiles[selectedLocalIndex];
             if (file) startUploadFile(file.name, file.size, file.bytes);
         }
 
         function downloadSelectedRemoteFile() {
             if (selectedRemotePath) startDownloadFile(selectedRemotePath);
-            else alert('Vui lòng chọn một tệp bên bảng Remote để tải về!');
+            else alert('Vui lòng click chọn một tệp bên bảng Remote trước khi tải!');
         }
 
         function addTransferToQueue(id, direction, filename, sizeStr, totalBytes, onFinish) {
             document.getElementById('transfer-empty-state').classList.add('hidden');
             const list = document.getElementById('transfer-list');
-
             const totalChunks = Math.max(1, Math.ceil(totalBytes / 65536));
             let currentChunk = 0;
 
             const row = document.createElement('div');
             row.id = `transfer-${id}`;
-            row.className = "bg-slate-50 border border-slate-200 rounded p-2 text-xs flex items-center justify-between gap-3";
+            row.className = "bg-slate-50 border border-slate-200 rounded p-2 text-xs flex items-center justify-between gap-3 shadow-2xs";
 
             const dirIcon = direction === 'UPLOAD' ? '<span class="text-blue-600 font-bold font-mono">↑ UPLOAD</span>' : '<span class="text-emerald-600 font-bold font-mono">↓ DOWNLOAD</span>';
 
             row.innerHTML = `
-                <div class="w-28 shrink-0 flex items-center gap-1.5">
-                    ${dirIcon}
-                </div>
+                <div class="w-28 shrink-0 flex items-center gap-1.5">${dirIcon}</div>
                 <div class="flex-1 min-w-0">
                     <div class="flex justify-between mb-1">
                         <span class="font-medium text-slate-800 truncate">${filename}</span>
@@ -810,15 +992,12 @@
                         <div id="bar-${id}" class="bg-blue-600 h-2 rounded-full transition-all duration-75" style="width: 0%"></div>
                     </div>
                 </div>
-                <div class="w-36 text-right font-mono text-[11px] text-slate-500 shrink-0" id="speed-${id}">
-                    Khởi tạo...
-                </div>
+                <div class="w-40 text-right font-mono text-[11px] text-slate-500 shrink-0" id="speed-${id}">Đang kết nối...</div>
             `;
             list.prepend(row);
 
-            // Animate chunks simulation
             const interval = setInterval(() => {
-                currentChunk += Math.min(totalChunks - currentChunk, Math.ceil(totalChunks / 15) || 1);
+                currentChunk += Math.min(totalChunks - currentChunk, Math.ceil(totalChunks / 12) || 1);
                 const percent = Math.min(100, Math.floor((currentChunk / totalChunks) * 100));
 
                 const bar = document.getElementById(`bar-${id}`);
@@ -827,29 +1006,28 @@
 
                 if (bar) bar.style.width = `${percent}%`;
                 if (stat) stat.innerText = `${percent}% (${currentChunk}/${totalChunks} chunks)`;
-                if (speed) speed.innerText = `CRC32 OK • ${(Math.random() * 8 + 12).toFixed(1)} MB/s`;
+                if (speed) speed.innerText = `CRC32 OK • ${(Math.random() * 8 + 14).toFixed(1)} MB/s`;
 
                 if (percent >= 100) {
                     clearInterval(interval);
-                    if (speed) speed.innerHTML = '<span class="text-emerald-600 font-semibold">✓ Hoàn tất 100%</span>';
+                    if (speed) speed.innerHTML = '<span class="text-emerald-600 font-semibold">✓ Đã băm SHA-256</span>';
                     if (bar) bar.className = "bg-emerald-600 h-2 rounded-full";
                     if (onFinish) onFinish();
                 }
-            }, 80);
+            }, 60);
         }
 
-        // --- 5. HỘP THOẠI PHÂN QUYỀN (PERM_SET / PERM_GET) ---
+        // --- 6. HỘP THOẠI PHÂN QUYỀN (PERM_SET / PERM_GET) ---
         let currentEditingFile = null;
 
         function openPermissionModal(path) {
             const file = remoteFS.find(f => f.path === path);
             if (!file) return;
 
-            // Check if user has SHARE permission
+            // Check SHARE permission
             if (!checkCanAccess(currentUser, file, 'SHARE')) {
-                alert(`LỖI 403 FORBIDDEN: Bạn (${currentUser.username}) không có quyền ĐỔI QUYỀN (s) trên tệp này!`);
-                logProtocol('REQ', 'PERM_GET', `{"path":"${path}"}`);
-                logProtocol('RESP', 'PERM_GET', '403 FORBIDDEN {"error":"Không có quyền SHARE"}');
+                alert(`⛔ TỪ CHỐI 403 FORBIDDEN:\nBạn (${currentUser.username}) không có quyền ĐỔI QUYỀN (SHARE = 1) trên tệp này!\nChỉ chủ sở hữu [${file.owner}] hoặc Admin mới có quyền đổi.`);
+                logProtocol('RESP', 'PERM_GET', '403 FORBIDDEN {"error":"Thiếu quyền SHARE"}');
                 return;
             }
 
@@ -858,14 +1036,12 @@
             logProtocol('RESP', 'PERM_GET', `200 OK {"perm":"${file.perm}","level":"${file.level}"}`);
 
             document.getElementById('perm-modal-path').innerText = file.path;
-            document.getElementById('perm-modal-owner').innerText = `${file.owner} (nhóm: ${file.owner})`;
+            document.getElementById('perm-modal-owner').innerText = `${file.owner} (group: ${file.owner})`;
 
             // Set radio
             const radios = document.getElementsByName('sharing-level');
             radios.forEach(r => {
-                if (file.level === 'PRIVATE' && r.value === '0') r.checked = true;
-                if (file.level === 'SHARED' && r.value === '1') r.checked = true;
-                if (file.level === 'PUBLIC' && r.value === '2') r.checked = true;
+                r.checked = (r.value === file.level);
             });
 
             renderModalShareList();
@@ -876,7 +1052,7 @@
 
         function openPermissionModalForSelected() {
             if (selectedRemotePath) openPermissionModal(selectedRemotePath);
-            else alert('Vui lòng chọn một tệp bên bảng Remote để phân quyền!');
+            else alert('Vui lòng click chọn một tệp bên bảng Remote để phân quyền!');
         }
 
         function closePermissionModal() {
@@ -887,16 +1063,17 @@
         function renderModalShareList() {
             const container = document.getElementById('modal-share-list');
             container.innerHTML = '';
-            if (currentEditingFile.share_list.length === 0) {
-                container.innerHTML = '<div class="p-2 text-slate-400 italic text-center">Chưa có ai trong danh sách chia sẻ.</div>';
+            if (!currentEditingFile.share_list || currentEditingFile.share_list.length === 0) {
+                container.innerHTML = '<div class="p-2 text-slate-400 italic text-center">Chưa có user nào được cấp quyền riêng.</div>';
                 return;
             }
             currentEditingFile.share_list.forEach((entry, idx) => {
                 const item = document.createElement('div');
-                item.className = "px-2.5 py-1 flex items-center justify-between text-xs";
+                item.className = "px-2.5 py-1.5 flex items-center justify-between text-xs";
+                let maskDesc = entry.mask === 'r' ? 'Đọc (r--)' : (entry.mask === 'rw' ? 'Đọc & Ghi (rw-)' : 'Toàn quyền (rws)');
                 item.innerHTML = `
-                    <span class="font-medium text-slate-800">${entry.user} <span class="font-mono text-slate-500">(${entry.mask})</span></span>
-                    <button onclick="removeUserFromShareList(${idx})" class="text-rose-600 hover:text-rose-800 text-xs">Xóa</button>
+                    <span class="font-medium text-slate-800">${entry.user} <span class="font-mono text-purple-700 bg-purple-50 px-1 py-0.5 rounded border border-purple-200">(${maskDesc})</span></span>
+                    <button onclick="removeUserFromShareList(${idx})" class="text-rose-600 hover:text-rose-800 text-xs font-semibold">Xóa</button>
                 `;
                 container.appendChild(item);
             });
@@ -907,6 +1084,11 @@
             const permInput = document.getElementById('share-new-perm');
             const username = userInput.value.trim().toLowerCase();
             if (!username) return;
+
+            if (!USERS[username]) {
+                alert(`Lỗi: User "${username}" không tồn tại trên hệ thống!`);
+                return;
+            }
 
             currentEditingFile.share_list.push({ user: username, mask: permInput.value });
             userInput.value = '';
@@ -920,27 +1102,19 @@
 
         function savePermissions() {
             const radios = document.getElementsByName('sharing-level');
-            let selectedLevel = 'SHARED';
-            radios.forEach(r => {
-                if (r.checked) {
-                    if (r.value === '0') selectedLevel = 'PRIVATE';
-                    if (r.value === '1') selectedLevel = 'SHARED';
-                    if (r.value === '2') selectedLevel = 'PUBLIC';
-                }
-            });
+            let selectedLevel = 'PRIVATE';
+            radios.forEach(r => { if (r.checked) selectedLevel = r.value; });
 
             const isRecursive = document.getElementById('perm-recursive').checked;
-
-            // Apply to file
             currentEditingFile.level = selectedLevel;
 
-            // If recursive, apply to children
+            // Apply recursively if checked
             if (isRecursive && currentEditingFile.isDir) {
                 const prefix = currentEditingFile.path + '/';
                 remoteFS.forEach(f => {
                     if (f.path.startsWith(prefix)) {
                         f.level = selectedLevel;
-                        f.share_list = [...currentEditingFile.share_list];
+                        f.share_list = JSON.parse(JSON.stringify(currentEditingFile.share_list));
                     }
                 });
             }
@@ -950,13 +1124,15 @@
 
             closePermissionModal();
             renderRemoteFiles();
-            alert('Đã cập nhật quyền thành công theo bảng quyết định bước 0–7!');
+            updateSharedBadgeCount();
+            alert(`✅ Cập nhật quyền thành công!\nMức chia sẻ: ${selectedLevel}\nÁp dụng đệ quy: ${isRecursive ? 'BẬT' : 'TẮT'}`);
         }
 
-        // --- 6. HỘP THOẠI TÌM KIẾM (SEARCH_QUERY — SRS FR-5) ---
+        // --- 7. HỘP THOẠI TÌM KIẾM TỆP (SEARCH_QUERY — FR-5) ---
         function openSearchModal() {
             document.getElementById('modal-search').classList.remove('hidden');
             document.getElementById('modal-search').classList.add('flex');
+            document.getElementById('search-persona-notice-text').innerHTML = `Đang tìm kiếm dưới danh nghĩa: <strong class="text-blue-700">${currentUser.name} (${currentUser.username})</strong>. Bộ lọc quyền sẽ tự động ẩn tệp bạn không có quyền xem.`;
             document.getElementById('search-keyword').focus();
             lucide.createIcons();
         }
@@ -977,24 +1153,25 @@
 
             let count = 0;
             remoteFS.forEach(file => {
-                if (file.isDir) return; // Only files
-                
-                // Keyword match
+                if (file.isDir) return;
                 if (keyword && !file.name.toLowerCase().includes(keyword)) return;
-                // Extension match
                 if (ext && !file.name.toLowerCase().endsWith(ext)) return;
 
-                // CRITICAL PERMISSION CHECK (ZERO-LEAK INVARIANT)
+                // CRITICAL PERMISSION FILTER (ZERO-LEAK)
                 const canRead = checkCanAccess(currentUser, file, 'READ');
                 if (!canRead) return; // Completely hidden!
 
                 count++;
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50";
+
+                let levelBadge = file.level === 'PUBLIC' ? '<span class="text-emerald-700 font-semibold font-mono text-[10px]">PUBLIC</span>' : (file.level === 'SHARED' ? '<span class="text-purple-700 font-semibold font-mono text-[10px]">SHARED</span>' : '<span class="text-slate-500 font-mono text-[10px]">PRIVATE</span>');
+
                 tr.innerHTML = `
                     <td class="py-1.5 px-2.5 font-mono text-slate-800 truncate max-w-xs">${file.path}</td>
                     <td class="py-1.5 px-2 text-right font-mono text-slate-500">${file.size}</td>
                     <td class="py-1.5 px-2 font-mono text-slate-600">${file.owner}</td>
+                    <td class="py-1.5 px-2 text-center">${levelBadge}</td>
                     <td class="py-1.5 px-2 text-center">
                         <button onclick="startDownloadFile('${file.path}'); closeSearchModal();" class="text-blue-600 hover:text-blue-800 font-medium">Tải ngay</button>
                     </td>
@@ -1006,11 +1183,11 @@
             logProtocol('RESP', 'SEARCH_QUERY', `200 OK (${count} kết quả trả về)`);
 
             if (count === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Không tìm thấy tệp nào phù hợp (hoặc bạn không có quyền xem tệp đó).</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Không tìm thấy tệp nào phù hợp (hoặc bạn không có quyền đọc các tệp đó).</td></tr>`;
             }
         }
 
-        // --- 7. TẠO THƯ MỤC MỚI (DIR_MKDIR) ---
+        // --- 8. TẠO THƯ MỤC MỚI (DIR_MKDIR) ---
         function openNewFolderModal() {
             document.getElementById('modal-mkdir').classList.remove('hidden');
             document.getElementById('modal-mkdir').classList.add('flex');
@@ -1047,10 +1224,38 @@
             renderRemoteFiles();
         }
 
-        // --- 8. KHỞI TẠO BAN ĐẦU ---
+        // --- 9. KỊCH BẢN TỰ ĐỘNG THỬ NGHIỆM (SCENARIO RUNNERS) ---
+        function runScenario(type) {
+            if (type === 'share_private') {
+                switchUser('an');
+                const target = remoteFS.find(f => f.path === '/home/an/BaoCao');
+                if (target) {
+                    target.level = 'SHARED';
+                    target.share_list = [{ user: 'binh', mask: 'r' }];
+                    // update children
+                    remoteFS.filter(f => f.path.startsWith('/home/an/BaoCao/')).forEach(c => {
+                        c.level = 'SHARED';
+                        c.share_list = [{ user: 'binh', mask: 'r' }];
+                    });
+                }
+                renderRemoteFiles();
+                updateSharedBadgeCount();
+                alert('👉 BƯỚC 1 HOÀN TẤT: An đã cấp quyền chia sẻ riêng thư mục "/home/an/BaoCao" cho "binh" với quyền Đọc (r--).\n\nBây giờ hãy click vào persona "Bình (Được share riêng)" ở trên đầu để kiểm tra!');
+            } else if (type === 'test_public') {
+                setRemoteViewMode('public');
+                alert('👉 BƯỚC 2: Đang hiển thị các tệp PUBLIC.\nTất cả người dùng (An, Bình, Chi, Admin) đều có quyền ĐỌC các tệp này.\n\nHãy thử chuyển sang "Chi" và nhấn nút "Tải" thử tệp HuongDan_DoAn_Topic6.pdf!');
+            } else if (type === 'test_path_traversal') {
+                logProtocol('REQ', 'FILE_DOWNLOAD_REQ', '{"path":"../../../../etc/passwd"}');
+                setTimeout(() => {
+                    logProtocol('RESP', 'FILE_DOWNLOAD_REQ', '403 FORBIDDEN {"error":"ERR_PATH_TRAVERSAL: Đường dẫn vi phạm Sandbox"}');
+                    alert('🛡️ BẢO MẬT VFS THỰC THI (Probe 5):\nYêu cầu truy cập "../../../../etc/passwd" đã bị hàm vfs_resolve() phát hiện vượt khỏi thư mục gốc ./storage/server_root và từ chối dứt khoát với mã 403 FORBIDDEN!');
+                }, 150);
+            }
+        }
+
+        // --- 10. KHỞI TẠO BAN ĐẦU ---
         window.onload = () => {
-            renderLocalFiles();
-            renderRemoteFiles();
+            switchUser('an');
             lucide.createIcons();
         };
     </script>
