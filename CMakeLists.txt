@@ -26,24 +26,41 @@ include_directories(
 )
 
 # Common Static Library
+find_package(Threads REQUIRED)
+
 add_library(fsp_common STATIC
     src/common/Socket.cpp
     src/common/PacketHandler.cpp
+    src/common/Connection.cpp
+    src/common/EventDispatcher.cpp
 )
 target_include_directories(fsp_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(fsp_common PUBLIC ${PLATFORM_NETWORK_LIBS})
+target_link_libraries(fsp_common PUBLIC ${PLATFORM_NETWORK_LIBS} Threads::Threads)
+
+# Server Core Library (M1: ThreadPool + NetworkServer). M2/M3 thêm source của họ vào đây.
+add_library(fsp_server_core STATIC
+    src/server/ServerWorkerThreadPool.cpp
+    src/server/NetworkServer.cpp
+)
+target_link_libraries(fsp_server_core PUBLIC fsp_common)
+
+# Client Core Library (M1: NetworkClient SDK dùng cho CLI và Qt GUI)
+add_library(fsp_client_core STATIC
+    src/client/NetworkClient.cpp
+)
+target_link_libraries(fsp_client_core PUBLIC fsp_common)
 
 # 1. Server Target
 add_executable(fsp_server
     src/server/main.cpp
 )
-target_link_libraries(fsp_server PRIVATE fsp_common)
+target_link_libraries(fsp_server PRIVATE fsp_server_core)
 
 # 2. Client CLI Target
 add_executable(fsp_client_cli
     src/client_cli/main.cpp
 )
-target_link_libraries(fsp_client_cli PRIVATE fsp_common)
+target_link_libraries(fsp_client_cli PRIVATE fsp_client_core)
 
 # 3. Optional: Qt Client GUI
 option(BUILD_QT_GUI "Build Qt-based Graphical Client" OFF)
@@ -77,6 +94,21 @@ add_executable(fsp_network_tests
 )
 target_link_libraries(fsp_network_tests PRIVATE fsp_common)
 add_test(NAME FSP_Network_Core_Tests COMMAND fsp_network_tests)
+
+# Test 3: Kiểm thử M1.3 EventDispatcher & M1.4 ThreadPool (không cần mạng)
+add_executable(fsp_dispatcher_tests
+    tests/test_dispatcher_threadpool.cpp
+)
+target_link_libraries(fsp_dispatcher_tests PRIVATE fsp_server_core)
+add_test(NAME FSP_Dispatcher_ThreadPool_Tests COMMAND fsp_dispatcher_tests)
+
+# Test 4: Kiểm thử tích hợp M1 qua TCP loopback thật (NetworkServer + NetworkClient)
+add_executable(fsp_server_integration_tests
+    tests/test_server_integration.cpp
+)
+target_link_libraries(fsp_server_integration_tests PRIVATE fsp_server_core fsp_client_core)
+add_test(NAME FSP_Server_Integration_Tests COMMAND fsp_server_integration_tests)
+set_tests_properties(FSP_Server_Integration_Tests PROPERTIES TIMEOUT 120)
 
 message(STATUS "FSP Build System Configured Successfully.")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
