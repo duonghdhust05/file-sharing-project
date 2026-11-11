@@ -1,146 +1,135 @@
 #ifndef FSP_PROTOCOL_H
 #define FSP_PROTOCOL_H
 
-#include <cstdint>
-#include <string>
+/*
+ * ============================================================================
+ * FSP (File Sharing Protocol) Specification v2.0 - C11
+ * Hợp đồng chung giữa 4 thành viên (SDD §3). Header này biên dịch được bằng
+ * C11 (gcc -std=c11) và vẫn dùng được từ C++ trong thời gian chuyển đổi.
+ * KHÔNG thay đổi bố cục FSPHeader (42 byte) / FileChunkHeader (88 byte).
+ * ============================================================================
+ */
 
-// ============================================================================
-// FSP (File Sharing Protocol) Specification v1.0
-// Designed for University Networking Program - Topic 6
-// ============================================================================
+#include <stdint.h>
 
-namespace FSP {
+/* ---- Hằng số giao thức ---------------------------------------------------- */
+#define FSP_MAGIC_BYTE 0xAAu
+#define FSP_HEADER_SIZE 42u
+#define FSP_CHUNK_HEADER_SIZE 88u
+#define FSP_DEFAULT_CHUNK_SIZE (64u * 1024u) /* 64 KB mỗi chunk */
+#define FSP_DEFAULT_SERVER_PORT 8088u
+#define FSP_EVENT_NAME_MAX_LEN 32u /* gồm cả '\0' -> tên tối đa 31 ký tự */
+#define FSP_UUID_MAX_LEN 64u
 
-// Protocol constants
-constexpr uint8_t MAGIC_BYTE = 0xAA;
-constexpr uint32_t HEADER_SIZE = 42;
-constexpr uint32_t DEFAULT_CHUNK_SIZE = 64 * 1024;  // 64 KB per chunk
-constexpr uint16_t DEFAULT_SERVER_PORT = 8088;
-constexpr uint32_t EVENT_NAME_MAX_LEN = 32;
-constexpr uint32_t UUID_MAX_LEN = 64;
+/* ---- 1. Loại thông điệp (trường type) ------------------------------------- */
+typedef enum {
+    FSP_MSG_EVENT_REQ = 0x01,  /* Client gửi yêu cầu (payload JSON) */
+    FSP_MSG_EVENT_RESP = 0x02, /* Server phản hồi thành công */
+    FSP_MSG_FILE_CHUNK = 0x03, /* Chunk dữ liệu file nhị phân */
+    FSP_MSG_ACK = 0x04,        /* Xác nhận */
+    FSP_MSG_ERROR_RESP = 0x05, /* Phản hồi lỗi */
+    FSP_MSG_PING = 0x06,       /* Heartbeat */
+    FSP_MSG_PONG = 0x07
+} fsp_msg_type_t;
 
-// 1. Message Types
-enum class MessageType : uint8_t {
-    EVENT_REQ = 0x01,   // Client gửi yêu cầu sự kiện (JSON payload)
-    EVENT_RESP = 0x02,  // Server phản hồi sự kiện (JSON payload)
-    FILE_CHUNK = 0x03,  // Gói dữ liệu truyền tải chunk file nhị phân
-    ACK = 0x04,         // Xác nhận nhận thành công
-    ERROR_RESP = 0x05,  // Thông báo lỗi hệ thống/giao thức
-    PING = 0x06,        // Heartbeat Ping
-    PONG = 0x07         // Heartbeat Pong
-};
+/* ---- 2. Mã trạng thái (trường "status" trong JSON phản hồi) ------------- */
+typedef enum {
+    FSP_STATUS_OK = 200,
+    FSP_STATUS_CREATED = 201,
+    FSP_STATUS_ACCEPTED = 202,
+    FSP_STATUS_BAD_REQUEST = 400,
+    FSP_STATUS_UNAUTHORIZED = 401,
+    FSP_STATUS_FORBIDDEN = 403,
+    FSP_STATUS_NOT_FOUND = 404,
+    FSP_STATUS_CONFLICT = 409,
+    FSP_STATUS_PAYLOAD_TOO_LARGE = 413,
+    FSP_STATUS_INTERNAL_SERVER_ERROR = 500
+} fsp_status_t;
 
-// 2. Standard Status Codes
-enum class StatusCode : uint16_t {
-    OK = 200,
-    CREATED = 201,
-    ACCEPTED = 202,
-    BAD_REQUEST = 400,
-    UNAUTHORIZED = 401,
-    FORBIDDEN = 403,  // Không đủ quyền truy cập file/folder
-    NOT_FOUND = 404,  // File/Folder không tồn tại
-    CONFLICT = 409,   // Tên file/folder hoặc username đã tồn tại
-    PAYLOAD_TOO_LARGE = 413,
-    INTERNAL_SERVER_ERROR = 500
-};
+/* ---- 3. Quyền kiểu Linux: r = 4, w = 2, s(share) = 1 ---------------------- */
+#define FSP_PERM_OWNER_READ 0400u
+#define FSP_PERM_OWNER_WRITE 0200u
+#define FSP_PERM_OWNER_SHARE 0100u
+#define FSP_PERM_GROUP_READ 0040u
+#define FSP_PERM_GROUP_WRITE 0020u
+#define FSP_PERM_GROUP_SHARE 0010u
+#define FSP_PERM_OTHERS_READ 0004u
+#define FSP_PERM_OTHERS_WRITE 0002u
+#define FSP_PERM_OTHERS_SHARE 0001u
 
-// 3. Linux-like Permission Constants
-namespace Permission {
-// Permission bits (Read, Write, Share)
-constexpr uint16_t OWNER_READ = 0400;   // 0b100 000 000
-constexpr uint16_t OWNER_WRITE = 0200;  // 0b010 000 000
-constexpr uint16_t OWNER_SHARE = 0100;  // 0b001 000 000
+#define FSP_DEFAULT_FILE_PERM 0644u /* rw-r--r-- */
+#define FSP_DEFAULT_DIR_PERM 0755u  /* rwxr-xr-x (xem SDD §9 vấn đề mở #1) */
 
-constexpr uint16_t GROUP_READ = 0040;   // 0b000 100 000
-constexpr uint16_t GROUP_WRITE = 0020;  // 0b000 010 000
-constexpr uint16_t GROUP_SHARE = 0010;  // 0b000 001 000
+typedef enum {
+    FSP_LEVEL_PRIVATE = 0, /* Chỉ Owner */
+    FSP_LEVEL_SHARED = 1,  /* Nhóm hoặc danh sách user (ACL) */
+    FSP_LEVEL_PUBLIC = 2   /* Mọi user đã đăng nhập được đọc */
+} fsp_sharing_level_t;
 
-constexpr uint16_t OTHERS_READ = 0004;   // 0b000 000 100
-constexpr uint16_t OTHERS_WRITE = 0002;  // 0b000 000 010
-constexpr uint16_t OTHERS_SHARE = 0001;  // 0b000 000 001
+/* Mã hành động / mask ACL: READ = 1, WRITE = 2, SHARE = 4 (khác bảng bit Linux!) */
+typedef enum {
+    FSP_ACCESS_READ = 0x01,
+    FSP_ACCESS_WRITE = 0x02,
+    FSP_ACCESS_SHARE = 0x04
+} fsp_access_t;
 
-// Default file: 0644 (rw-r--r--), Default dir: 0755 (rwxr-xr-x)
-constexpr uint16_t DEFAULT_FILE_PERM = 0644;
-constexpr uint16_t DEFAULT_DIR_PERM = 0755;
+/* ---- 4. Tên sự kiện (SDD §3.4) -------------------------------------------- */
+#define FSP_EV_AUTH_REGISTER "AUTH_REGISTER"
+#define FSP_EV_AUTH_LOGIN "AUTH_LOGIN"
+#define FSP_EV_AUTH_LOGOUT "AUTH_LOGOUT"
 
-// Sharing Levels
-enum class SharingLevel : uint8_t {
-    PRIVATE = 0,  // Chỉ Owner truy cập
-    SHARED = 1,   // Chia sẻ cho nhóm hoặc danh sách user cụ thể
-    PUBLIC = 2    // Tất cả user đăng nhập đều có quyền đọc
-};
+#define FSP_EV_DIR_LIST "DIR_LIST"
+#define FSP_EV_DIR_MKDIR "DIR_MKDIR"
+#define FSP_EV_DIR_CHANGE "DIR_CHANGE"
+#define FSP_EV_DIR_PWD "DIR_PWD"
+#define FSP_EV_FS_DELETE "FS_DELETE"
+#define FSP_EV_FS_RENAME "FS_RENAME"
 
-enum class AccessType : uint8_t {
-    READ = 0x01,   // Xem nội dung / Download
-    WRITE = 0x02,  // Sửa / Upload đè / Xóa / Đổi tên
-    SHARE = 0x04   // Đổi quyền (chmod), cấp quyền cho người khác
-};
-}  // namespace Permission
+#define FSP_EV_FILE_UPLOAD_REQ "FILE_UPLOAD_REQ"
+#define FSP_EV_FILE_UPLOAD_FINISH "FILE_UPLOAD_FINISH"
+#define FSP_EV_FILE_DOWNLOAD_REQ "FILE_DOWNLOAD_REQ"
 
-// 4. Standard Event Names
-namespace Events {
-// Auth Events
-inline constexpr const char* AUTH_REGISTER = "AUTH_REGISTER";
-inline constexpr const char* AUTH_LOGIN = "AUTH_LOGIN";
-inline constexpr const char* AUTH_LOGOUT = "AUTH_LOGOUT";
+#define FSP_EV_FOLDER_UPLOAD_REQ "FOLDER_UPLOAD_REQ"
+#define FSP_EV_FOLDER_DOWNLOAD_REQ "FOLDER_DOWNLOAD_REQ"
 
-// Directory & File Management (FTP-like)
-inline constexpr const char* DIR_LIST = "DIR_LIST";
-inline constexpr const char* DIR_MKDIR = "DIR_MKDIR";
-inline constexpr const char* DIR_CHANGE = "DIR_CHANGE";  // cd
-inline constexpr const char* DIR_PWD = "DIR_PWD";        // pwd
-inline constexpr const char* FS_DELETE = "FS_DELETE";    // rm / rmdir
-inline constexpr const char* FS_RENAME = "FS_RENAME";
+#define FSP_EV_SEARCH_QUERY "SEARCH_QUERY"
+#define FSP_EV_PERM_GET "PERM_GET"
+#define FSP_EV_PERM_SET "PERM_SET"
 
-// Single File Transfer
-inline constexpr const char* FILE_UPLOAD_REQ = "FILE_UPLOAD_REQ";
-inline constexpr const char* FILE_UPLOAD_FINISH = "FILE_UPLOAD_FINISH";
-inline constexpr const char* FILE_DOWNLOAD_REQ = "FILE_DOWNLOAD_REQ";
-
-// Recursive Folder Transfer
-inline constexpr const char* FOLDER_UPLOAD_REQ = "FOLDER_UPLOAD_REQ";
-inline constexpr const char* FOLDER_DOWNLOAD_REQ = "FOLDER_DOWNLOAD_REQ";
-
-// Search & Permissions
-inline constexpr const char* SEARCH_QUERY = "SEARCH_QUERY";
-inline constexpr const char* PERM_GET = "PERM_GET";
-inline constexpr const char* PERM_SET = "PERM_SET";
-}  // namespace Events
-
-// ============================================================================
-// Network Binary Headers (Byte-aligned)
-// ============================================================================
+/* ============================================================================
+ * Header nhị phân trên đường truyền (căn lề 1 byte, số nguyên big-endian)
+ * ============================================================================ */
 #pragma pack(push, 1)
 
-/**
- * @brief Fixed Header cho mọi frame truyền qua TCP socket (42 Bytes)
- */
-struct FSPHeader {
-    uint8_t magic;                   // 1 byte: 0xAA
-    uint8_t type;                    // 1 byte: MessageType
-    uint32_t payload_len;            // 4 bytes: Độ dài payload tiếp theo (Big-Endian)
-    char event[EVENT_NAME_MAX_LEN];  // 32 bytes: Tên sự kiện (null-terminated string)
-    uint32_t checksum;               // 4 bytes: CRC32 của payload (0 nếu không payload)
-};
+/** Header cố định của mọi frame (42 byte) - SDD §3.1 */
+typedef struct FSPHeader {
+    uint8_t magic;                      /* 0xAA */
+    uint8_t type;                       /* fsp_msg_type_t */
+    uint32_t payload_len;               /* big-endian */
+    char event[FSP_EVENT_NAME_MAX_LEN]; /* kết thúc '\0', phần dư đệm 0 */
+    uint32_t checksum;                  /* CRC32 của payload, big-endian; 0 nếu rỗng */
+} FSPHeader;
 
-/**
- * @brief Header đi kèm trước mỗi chunk dữ liệu nhị phân khi gửi FILE_CHUNK
- */
-struct FileChunkHeader {
-    char transfer_id[UUID_MAX_LEN];  // 64 bytes: UUID định danh phiên truyền file
-    uint64_t chunk_index;            // 8 bytes: Thứ tự chunk hiện tại (0-indexed)
-    uint64_t total_chunks;           // 8 bytes: Tổng số chunks
-    uint32_t chunk_size;             // 4 bytes: Kích thước dữ liệu chunk đi kèm
-    uint32_t chunk_crc;              // 4 bytes: CRC32 riêng cho chunk này
-};
+/** Header đặt đầu payload của frame FILE_CHUNK (88 byte) - SDD §3.2 */
+typedef struct FileChunkHeader {
+    char transfer_id[FSP_UUID_MAX_LEN];
+    uint64_t chunk_index;  /* big-endian */
+    uint64_t total_chunks; /* big-endian */
+    uint32_t chunk_size;   /* big-endian, <= 65536 */
+    uint32_t chunk_crc;    /* big-endian */
+} FileChunkHeader;
 
 #pragma pack(pop)
 
-// Compile-time assertion để đảm bảo kích thước header đúng 42 bytes
-static_assert(sizeof(FSPHeader) == 42, "FSPHeader must be exactly 42 bytes! Check padding.");
-static_assert(sizeof(FileChunkHeader) == 88,
-              "FileChunkHeader must be exactly 88 bytes! Check padding.");
+typedef FSPHeader fsp_header_t;
+typedef FileChunkHeader fsp_chunk_header_t;
 
-}  // namespace FSP
+#ifdef __cplusplus
+static_assert(sizeof(FSPHeader) == 42, "FSPHeader must be exactly 42 bytes");
+static_assert(sizeof(FileChunkHeader) == 88, "FileChunkHeader must be exactly 88 bytes");
+#else
+_Static_assert(sizeof(FSPHeader) == 42, "FSPHeader must be exactly 42 bytes");
+_Static_assert(sizeof(FileChunkHeader) == 88, "FileChunkHeader must be exactly 88 bytes");
+#endif
 
-#endif  // FSP_PROTOCOL_H
+#endif /* FSP_PROTOCOL_H */

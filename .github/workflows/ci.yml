@@ -26,19 +26,26 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install Clang-Format
+      # Ghim phiên bản clang-format: bản apt đổi theo Ubuntu (18 -> 21) làm cùng một file
+      # lúc đạt lúc không. Cả nhóm cài đúng bản này: pip install clang-format==18.1.3
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Clang-Format (pinned)
         run: |
-          sudo apt update
-          sudo apt install -y clang-format
+          pip install clang-format==18.1.3
+          clang-format --version
 
       - name: Verify Code Formatting
         run: |
-          echo "Checking C++ formatting against .clang-format..."
-          find include src tests -type f \( -name "*.h" -o -name "*.hpp" -o -name "*.cpp" \) -exec clang-format --dry-run --Werror {} +
+          echo "Checking C formatting against .clang-format..."
+          find include src tests -type f \( -name "*.h" -o -name "*.c" \) -exec clang-format --dry-run --Werror {} +
           echo "Code formatting check passed."
 
   # =========================================================================
-  # 2. Multi-Platform Matrix Build & Automated Test Execution
+  # 2. Build (C11 + POSIX) & Automated Test Execution
   # =========================================================================
   build-and-test:
     name: Build & Test (${{ matrix.os }} - ${{ matrix.build_type }})
@@ -47,33 +54,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        # Mã nguồn dùng POSIX socket + pthread (SDD v2.0) -> chỉ build trên Linux
+        os: [ubuntu-latest]
         build_type: [Release, Debug]
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Linux: Enable AddressSanitizer (ASan) & UndefinedBehaviorSanitizer (UBSan) in Debug
-      - name: Configure CMake (Linux)
-        if: runner.os == 'Linux'
+      # Debug: bật AddressSanitizer + UndefinedBehaviorSanitizer
+      - name: Configure CMake
         run: |
           if [ "${{ matrix.build_type }}" = "Debug" ]; then
-            echo "Enabling AddressSanitizer and UndefinedBehaviorSanitizer for memory safety testing..."
+            echo "Enabling AddressSanitizer and UndefinedBehaviorSanitizer..."
             cmake -B build -S . \
               -DCMAKE_BUILD_TYPE=Debug \
-              -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g"
+              -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -g"
           else
             cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
           fi
 
-      # Windows: Standard MSVC Configuration
-      - name: Configure CMake (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          cmake -B build -S .
-
-      - name: Build All Targets (Server, Client CLI, Tests)
+      - name: Build All Targets (Server, Tests)
         run: |
           cmake --build build --config ${{ matrix.build_type }} --parallel
 
@@ -88,11 +89,6 @@ jobs:
         with:
           name: fsp-debug-${{ matrix.os }}
           path: |
-            build/fsp_server*
-            build/fsp_client_cli*
-            build/fsp_tests*
-            build/Debug/fsp_server*
-            build/Debug/fsp_client_cli*
-            build/Debug/fsp_tests*
+            build/fsp_server
+            build/fsp_test_*
           retention-days: 7
-
