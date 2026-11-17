@@ -3,7 +3,7 @@
 
 > **Mục đích:** Tài liệu này quy định cách làm việc, nguyên tắc viết mã, chuẩn kiểm thử và ranh giới an toàn cho mọi AI Coding Agent (Cursor, Claude, Copilot, Gemini, ChatGPT...) và 4 thành viên trong dự án.
 > **Nguyên tắc tối cao:** Developer là người quyết định (Lead / Gatekeeper). Agent là cộng sự thi công có kiểm soát: không tự ý vượt phạm vi, không sinh code rác, không tạo test đối phó.
-> **Nguồn sự thật duy nhất về yêu cầu:** [docs/SRS.md](docs/SRS.md) v3.0. Nếu tài liệu khác mâu thuẫn với SRS, **SRS thắng**.
+> **Nguồn sự thật duy nhất về yêu cầu:** [docs/pdf-document/SRS.md](docs/pdf-document/SRS.md) v3.1. Nếu tài liệu khác mâu thuẫn với SRS, **SRS thắng**.
 
 ---
 
@@ -49,7 +49,7 @@
 
 > TDD (viết test trước) là **tùy chọn**. Nhưng **chất lượng test là bắt buộc 100%** — xem [docs/TDD/README.md](docs/TDD/README.md).
 
-Mỗi tính năng phải được bao phủ bởi **6 Probe** sau (chi tiết: [docs/TDD/ADVERSARIAL-TDD-GUIDE.md](docs/TDD/ADVERSARIAL-TDD-GUIDE.md)):
+Mỗi tính năng phải được bao phủ bởi **6 Probe** sau (chi tiết: [docs/TDD/README.md](docs/TDD/README.md)):
 
 | Probe | Nội dung | Phụ trách |
 |:-:|:---|:-:|
@@ -58,9 +58,11 @@ Mỗi tính năng phải được bao phủ bởi **6 Probe** sau (chi tiết: [
 | 3 | **Phân quyền:** mỗi bước 0–7 của `can_access` có test; file `PRIVATE` có bit `0666` vẫn từ chối người khác (`403`) | M2 |
 | 4 | **Chunk hỏng:** lật 1 bit trong chunk → phát hiện sai CRC32, không còn file `.part` | M3 |
 | 5 | **Path traversal:** `../../../../etc/passwd`, `cd ../../..` không thoát khỏi `/` ảo | M3 |
-| 6 | **Bộ nhớ & đồng thời:** test chạy sạch dưới ASan + UBSan; ≥ 5 client đồng thời hoạt động đúng | Cả nhóm |
+| 6 | **Bộ nhớ & đồng thời:** test chạy sạch dưới ASan + UBSan và TSan (`NFR-C3`); ≥ 5 client đồng thời hoạt động đúng | Cả nhóm |
 
 Kiểm thử end-to-end bắt buộc trước demo: bảng truy vết SRS §9.
+* **Quy ước truy vết (`@covers`):** Mỗi hàm `test_*()` gắn comment `/* @covers: UCxx, FR-x.y, NFR-xx */` để đối chiếu trực tiếp với [docs/uc-details/UC-CHECKLIST.md](docs/uc-details/UC-CHECKLIST.md) và [docs/uc-details/NFR-CHECKLIST.md](docs/uc-details/NFR-CHECKLIST.md).
+* **FD & `.part` Hygiene:** Dùng `CHECK_NO_FD_LEAK` và `CHECK_NO_PART_FILES` trong [tests/test_util.h](tests/test_util.h) cho các test thao tác socket/file.
 
 ---
 
@@ -68,13 +70,15 @@ Kiểm thử end-to-end bắt buộc trước demo: bảng truy vết SRS §9.
 
 1. **Xác định module & nhánh** (M1–M4) trước khi sinh mã; chỉ sửa file thuộc phạm vi đó, trừ khi được yêu cầu tích hợp.
 2. **Đối chiếu SRS** (mã FR/NFR, mức ưu tiên). Nếu yêu cầu của thành viên vượt SRS → hỏi lại trước khi làm.
-3. **Micro-plan** cho tính năng phức tạp (< 60 dòng, mẫu [docs/TDD/templates/micro-plan-template.md](docs/TDD/templates/micro-plan-template.md)) để thành viên duyệt.
+3. **Micro-plan & Light Dual-Gate:** Với tính năng nghiệp vụ/mạng (M2, M3, tích hợp `fsp_client_api`), lập Micro-plan (< 80 dòng, mẫu [docs/TDD/templates/micro-plan-template.md](docs/TDD/templates/micro-plan-template.md)):
+   * **Gate 1 (Red):** Chỉ sửa `.h`, tạo hàm stub trong `.c` và viết test theo [c11_test_template.c](docs/TDD/templates/c11_test_template.c) → chạy `ctest` phải FAIL.
+   * **Gate 2 (Green):** Giữ nguyên assertion của test, triển khai code C11 trong `src/` tới khi pass sạch dưới cả `ASan+UBSan` và `TSan`. *(Giao diện widget GTK thuần túy kiểm thử theo kịch bản thực tế, không ép ASan lên `libgtk3`.)*
 4. **C11 sạch:**
    * Quyền sở hữu con trỏ rõ ràng; mọi nhánh lỗi (`goto cleanup`) giải phóng `malloc` và đóng `fd`/`FILE*`.
    * Truyền file bằng **bộ đệm cố định 64 KB**, không đọc cả file vào RAM.
    * Dữ liệu dùng chung giữa các thread (bảng user, phiên, quyền) bảo vệ bằng `pthread_mutex_t` (hoặc `pthread_rwlock_t`), khóa theo một thứ tự cố định để tránh deadlock.
    * Dùng `snprintf`/`memcpy` có kiểm tra độ dài; kiểm tra `payload_len` trước khi cấp phát/đọc.
-5. **Giải thích được:** mã sinh ra phải đủ đơn giản để thành viên phụ trách tự giải thích trước giảng viên (xem [docs/LEARNING-ROADMAP.md](docs/LEARNING-ROADMAP.md)). Tránh kỹ thuật "khoe" không cần thiết.
+5. **Giải thích được:** mã sinh ra phải đủ đơn giản để thành viên phụ trách tự giải thích trước giảng viên (xem [docs/archive/LEARNING-ROADMAP.md](docs/archive/LEARNING-ROADMAP.md)). Tránh kỹ thuật "khoe" không cần thiết.
 6. **Format & build:** tuân thủ `.clang-format`; cập nhật `CMakeLists.txt` khi thêm file nguồn/test.
 
 ---
@@ -90,20 +94,24 @@ cmake -B build -S .
 cmake --build build --parallel
 cd build && ctest --output-on-failure
 
-# 3. Kiểm tra bộ nhớ (Linux / WSL):
-cmake -B build-asan -S . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=address,undefined -g"
+# 3. Kiểm tra bộ nhớ (ASan + UBSan) & Data Race (TSan) trên Linux / WSL:
+cmake -B build-asan -S . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -g"
 cmake --build build-asan --parallel
-cd build-asan && ctest --output-on-failure
+ctest --test-dir build-asan --output-on-failure
+
+cmake -B build-tsan -S . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=thread -g -O1"
+cmake --build build-tsan --parallel
+ctest --test-dir build-tsan --output-on-failure
 ```
 
 ---
 
 ## 6. TÀI LIỆU CẦN ĐỐI CHIẾU
-* 📄 **SRS (yêu cầu — nguồn sự thật):** [docs/SRS.md](docs/SRS.md)
-* 🎓 **Lộ trình kiến thức & kế hoạch 2 tuần:** [docs/LEARNING-ROADMAP.md](docs/LEARNING-ROADMAP.md)
-* 📘 **SDD (thiết kế):** [docs/SDD.md](docs/SDD.md)
+* 📄 **SRS (yêu cầu — nguồn sự thật):** [docs/pdf-document/SRS.md](docs/pdf-document/SRS.md)
+* 🎓 **Lộ trình kiến thức & kế hoạch 2 tuần:** [docs/archive/LEARNING-ROADMAP.md](docs/archive/LEARNING-ROADMAP.md)
+* 📘 **SDD (thiết kế):** [docs/pdf-document/SDD.md](docs/pdf-document/SDD.md)
 * 📋 **WBS (phân công & checklist):** [docs/WBS.md](docs/WBS.md)
-* 🔄 **Chuyển C++ → C11:** [docs/C-MIGRATION-PLAN.md](docs/C-MIGRATION-PLAN.md)
-* 🚀 **CI/CD:** [docs/CICD.md](docs/CICD.md)
+* ✅ **Checklist Use Case & NFR:** [docs/uc-details/UC-CHECKLIST.md](docs/uc-details/UC-CHECKLIST.md) · [docs/uc-details/NFR-CHECKLIST.md](docs/uc-details/NFR-CHECKLIST.md) · [docs/uc-details/](docs/uc-details/README.md)
+* 🚀 **CI/CD:** [docs/archive/CICD.md](docs/archive/CICD.md)
 * 🛡️ **Chuẩn kiểm thử:** [docs/TDD/README.md](docs/TDD/README.md)
 * ⚙️ **Hợp đồng giao thức:** [include/common/FSPProtocol.h](include/common/FSPProtocol.h)

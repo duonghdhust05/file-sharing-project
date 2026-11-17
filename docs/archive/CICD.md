@@ -38,11 +38,11 @@ Hệ sinh thái CI/CD được xây dựng bằng **GitHub Actions** với mô h
                                       | (Passed)
                                       v
 +-----------------------------------------------------------------------------+
-| TẦNG 2: BUILD & MEMORY SANITIZERS (AUTOMATED VERIFICATION)                  |
-| • Biên dịch CMake (Release & Debug)                                         |
-| • Công cụ kiểm tra bộ nhớ (Linux Debug):                                    |
-|   - AddressSanitizer (ASan): Phát hiện Buffer Overflow, Heap-out-of-bounds  |
-|   - UndefinedBehaviorSanitizer (UBSan): Bắt lỗi số học, tràn số, nullptr    |
+| TẦNG 2: BUILD & MEMORY/THREAD SANITIZERS (AUTOMATED VERIFICATION)            |
+| • Biên dịch CMake (Release, Debug ASan+UBSan, và Debug TSan)                 |
+| • Công cụ kiểm tra an toàn (Linux Debug):                                    |
+|   - AddressSanitizer (ASan) + UBSan: Phát hiện Buffer Overflow, Leak, UB      |
+|   - ThreadSanitizer (TSan - NFR-C3): Phát hiện Data Race đa luồng pthread   |
 | • Automated Test Suite (CTest):                                             |
 |   - Kiểm tra _Static_assert sizeof(FSPHeader) == 42 bytes, Chunk == 88 bytes|
 |   - Kiểm tra tính toán CRC32 IEEE 802.3 & FIPS 180-4 SHA-256                |
@@ -79,10 +79,16 @@ Hệ sinh thái CI/CD được xây dựng bằng **GitHub Actions** với mô h
 find include src tests -type f \( -name "*.h" -o -name "*.c" -o -name "*.cpp" \) -exec clang-format -i {} +
 ```
 
-### Bước 2: Biên dịch và chạy CTest kèm AddressSanitizer
+### Bước 2: Biên dịch và chạy CTest kèm ASan/UBSan và TSan
 ```bash
-cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug
-cmake --build build --parallel
-cd build && ctest --output-on-failure
+# 1. AddressSanitizer + UndefinedBehaviorSanitizer (NFR-G1)
+cmake -B build-asan -S . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -g"
+cmake --build build-asan --parallel
+ctest --test-dir build-asan --output-on-failure
+
+# 2. ThreadSanitizer (NFR-C3)
+cmake -B build-tsan -S . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=thread -g -O1"
+cmake --build build-tsan --parallel
+ctest --test-dir build-tsan --output-on-failure
 ```
 Chỉ khi toàn bộ bài kiểm thử trong `ctest` báo **100% tests passed**, thành viên mới thực hiện `git push`.

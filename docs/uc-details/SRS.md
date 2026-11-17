@@ -4,7 +4,7 @@
 * **Phiên bản:** 3.0 (Thu gọn về phạm vi đồ án môn học, khả thi trong 2 tuần)
 * **Công nghệ:** C11, POSIX TCP Socket (`<sys/socket.h>`), `pthread`, GTK 3, CMake
 * **Môi trường chạy:** Server trên Linux/WSL; Client GUI trên Linux/WSL có GTK 3
-* **Tài liệu đi kèm:** [LEARNING-ROADMAP.md](LEARNING-ROADMAP.md) (lộ trình kiến thức & kế hoạch 2 tuần)
+* **Tài liệu đi kèm:** [LEARNING-ROADMAP.md](../archive/LEARNING-ROADMAP.md) (lộ trình kiến thức & kế hoạch 2 tuần)
 
 > **Quy ước mức ưu tiên (MoSCoW):**
 > **MUST** = bắt buộc để đạt yêu cầu đề bài · **SHOULD** = nên có nếu kịp · **COULD** = làm thêm khi dư thời gian · **WON'T** = không làm trong đồ án này.
@@ -412,7 +412,7 @@ flowchart TB
 * **Server:** thread chính chạy `accept()`; mỗi client mới được phục vụ bởi một thread riêng (`pthread_create` + `pthread_detach`). Dữ liệu dùng chung (danh sách user, phiên, bảng quyền) được bảo vệ bằng `pthread_mutex_t`. *(Thread pool là COULD.)*
 * **Client:** luồng GTK chỉ vẽ giao diện; mọi lệnh mạng được đẩy sang luồng mạng; kết quả trả về luồng GTK qua `g_idle_add()`.
 
-**Giao thức FSP (tóm tắt — chi tiết trong [SDD.md](SDD.md) và [FSPProtocol.h](../include/common/FSPProtocol.h)):**
+**Giao thức FSP (tóm tắt — chi tiết trong [SDD.md](../pdf-document/SDD.md) và [FSPProtocol.h](../../include/common/FSPProtocol.h)):**
 * Mỗi thông điệp = **header cố định 42 byte** (`magic`, `type`, `payload_len`, `event[32]`, `checksum`) + payload.
 * Lệnh điều khiển: payload là JSON ngắn (ví dụ `{"token":"...","path":"/home/an"}`).
 * Dữ liệu file: payload = `FileChunkHeader` 88 byte + tối đa 64 KB dữ liệu thô.
@@ -472,4 +472,4 @@ data/permissions.json    ← {path, owner, group, perm, level, share_list}
 | ACL `uid:mask` + quy trình 9 bước, viết như một chuẩn riêng | Giữ đúng logic M2 đã cài đặt, trình bày lại thành bảng bước 0–7; thêm PERM_SET đệ quy cho thư mục | Không phải viết lại code M2; dễ giải thích, dễ test hết |
 | 4 persona (Admin, Engineer, CI Runner, Auditor) | 3 tác nhân: Khách, Người dùng, Admin | CI Runner/Auditor không xuất phát từ đề bài |
 
-> **Ảnh hưởng tới tài liệu khác:** `AGENTS.md`, `WBS.md`, `SDD.md`, `CICD.md`, `C-MIGRATION-PLAN.md` và `docs/TDD/*` đã được cập nhật theo bảng trên. `FSPProtocol.h` **không thay đổi**.
+> **Ảnh hưởng tới tài liệu khác:** `AGENTS.md`, `WBS.md`, `SDD.md`, `CICD.md` và `docs/TDD/*` đã được cập nhật theo bảng trên. `FSPProtocol.h` **không thay đổi**.

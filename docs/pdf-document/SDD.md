@@ -1,11 +1,12 @@
 # BẢN THIẾT KẾ PHẦN MỀM (SOFTWARE DESIGN DOCUMENT - SDD)
 ## Dự án: Ứng dụng chia sẻ file Client-Server qua Socket (Topic 6 — Group 7)
 
-* **Phiên bản:** 2.0 (đồng bộ với [SRS.md](SRS.md) v3.0)
+* **Phiên bản:** 2.1 (Đồng bộ [SRS.md](SRS.md) v3.1, 13 Use Case v1.0 & 27 NFR chính thức)
 * **Công nghệ:** C11, POSIX TCP socket, `pthread`, GTK 3, CMake
 * **Nhóm 7:** Trần Sỹ Nguyên (20235985), Bùi Đức Hiếu (20235931), Vũ Nhật Minh Dương (20235925), Hà Đức Dương (20235923)
+* **Tài liệu liên kết:** [UC-CHECKLIST.md](../uc-details/UC-CHECKLIST.md) · [NFR-CHECKLIST.md](../uc-details/NFR-CHECKLIST.md) · [uc-details/](../uc-details/README.md)
 
-> SRS trả lời câu hỏi **"làm gì"**; SDD trả lời **"làm thế nào"**. Mọi mã yêu cầu (FR-x, NFR-x, UCxx) tham chiếu tới SRS.
+> SRS trả lời câu hỏi **"làm gì"**; SDD trả lời **"làm thế nào"**. Mọi mã yêu cầu (`FR-x`, `NFR-A..H`, `UC01`–`UC13`) tham chiếu tới SRS v3.1.
 
 ---
 
@@ -40,6 +41,37 @@
 | Định dạng lệnh | Dòng văn bản (`CWD /home\r\n`) | Frame nhị phân 42 byte + payload JSON |
 | Dữ liệu file | Byte thô trên kết nối dữ liệu, kết thúc bằng đóng kết nối | Chunk ≤ 64 KB, mỗi chunk có header 88 byte + CRC32 |
 | Trạng thái phiên | `cwd` lưu theo kết nối | `cwd` lưu trong phiên, khóa bằng token |
+
+### 1.3 Ma trận Hiện thực hóa 13 UC (v1.0) & 27 NFR Chính thức vào Kiến trúc
+
+#### A. Ánh xạ 13 Use Case chính thức → Sự kiện FSP & Module C11
+| UC | Sự kiện FSP | Module / Hàm C11 chủ chốt | NFR trọng tâm của UC |
+|:-:|:---|:---|:---|
+| `UC01` | `AUTH_REGISTER` | `fsp_user_register`, `fsp_perm_register` *(+ tạo dir `/home/<user>`)* | `NFR-A4, A5, C2, D2, E3, E4, F2, F3` |
+| `UC02` | `AUTH_LOGIN` | `fsp_user_verify_login`, `fsp_session_create`, `fsp_client_login` | `NFR-A4, C1, C2, C3, E2, E3, E4, F2, F3` |
+| `UC03` | `AUTH_LOGOUT` | `fsp_session_destroy`, `dispatcher_run_cleanups`, `fsp_client_logout` | `NFR-A4, C2, D1, D2, D3, E2` |
+| `UC04` | `DIR_LIST` | `vfs_resolve`, `vfs_list`, `fsp_can_access(READ)` | `NFR-A4, B2, B3, E1, E2, F1, F2, F4` |
+| `UC05` | `DIR_CHANGE`, `DIR_PWD` | `vfs_resolve`, `fsp_session_set_cwd`, `fsp_client_cd/pwd` | `NFR-A4, B3, E1, E2, F1, F2, F4` |
+| `UC06` | `DIR_MKDIR` | `vfs_mkdir`, `fsp_perm_register`, `fsp_client_mkdir` | `NFR-A4, A5, B3, E1, E2, F1–F4` |
+| `UC07` | `FS_DELETE`, `FS_RENAME` | `vfs_delete/rename`, `fsp_perm_remove/rename` | `NFR-A4, A5, B3, C2, E1, E2, F1, F2` |
+| `UC08` | `FILE_UPLOAD_REQ`, `FILE_CHUNK`, `FILE_UPLOAD_FINISH` | `transfer_upload_*`, `fsp_crc32`, `.part`, `fsp_client_upload_file` | `NFR-A1–A5, B1–B2, C1–C3, D1–D3, E1–E2, F1–F4` |
+| `UC09` | `FILE_DOWNLOAD_REQ`, `FILE_CHUNK` | `transfer_send_file`, `fsp_can_access(READ)`, `fsp_client_download_file` | `NFR-A1–A4, B1–B2, C1–C3, D1–D3, E1–E2, F1–F4` |
+| `UC10` | `FOLDER_UPLOAD_REQ` (+ `UC08`) | `manifest_build/apply`, `vfs_mkdir`, `fsp_perm_register` | `NFR-A1–A5, B1–B2, C1–C2, D1, E1–E2, F1–F4` |
+| `UC11` | `FOLDER_DOWNLOAD_REQ` (+ `UC09`) | `manifest_build` lọc `READ` + `skipped`, `transfer_send_file` | `NFR-A1–A4, B1–B2, C1–C2, D1, E1–E2, F1–F4` |
+| `UC12` | `SEARCH_QUERY` (+ include `UC09`) | `search_by_name`, `fsp_can_access(READ)`, max 100 | `NFR-A4, B2–B3, C2, E1–E2, E4, F1–F4` |
+| `UC13` | `PERM_GET`, `PERM_SET` | `fsp_can_access(SHARE)`, `fsp_perm_set_recursive`, `grant/revoke` | `NFR-A4, A5, B3, C2–C3, E1–E2, F1–F4` |
+
+#### B. Ánh xạ 27 NFR chính thức → Cơ chế Thiết kế Kỹ thuật
+| Nhóm NFR | Mã đã chốt | Cơ chế hiện thực hóa trong kiến trúc SDD |
+|:---|:---|:---|
+| **A. Toàn vẹn** | `NFR-A1`, `NFR-A2`, `NFR-A3`, `NFR-A4`, `NFR-A5` | `send_exact`/`recv_exact` + header 42B (`A4`); chunk ≤ 64 KB + CRC32 (`A2`); ghi `.part` → `rename()` (`A3`, `A1`); ghi `users.json`/`permissions.json` qua `.tmp + rename()` (`A5`). |
+| **B. Bộ nhớ & Phản hồi** | `NFR-B1`, `NFR-B2`, `NFR-B3` | Bộ đệm truyền cố định 64 KB (`B1`); chặn `payload_len > FSP_BUFFER_SIZE` 128 KB (`B2`); `SEARCH_QUERY` giới hạn 100 kết quả, JSON phẳng + TSV (`B3`). |
+| **C. Đồng thời** | `NFR-C1`, `NFR-C2`, `NFR-C3` | `1 thread / client` (`pthread_create` + `pthread_detach`) phục vụ ≥ 5 client (`C1`); mutex riêng cho `user`, `session`, `perm` theo thứ tự khóa cố định (`C2`); kiểm tra bằng TSan (`C3`). |
+| **D. Tin cậy** | `NFR-D1`, `NFR-D2`, `NFR-D3` | Lỗi socket chạy `dispatcher_run_cleanups()` hủy phiên & `unlink(.part)` (`D1`); `SIGPIPE` `SIG_IGN` + `SO_REUSEADDR` (`D2`); `PING`/`PONG` + `SO_RCVTIMEO = 30s` (`D3`). |
+| **E. Bảo mật** | `NFR-E1`, `NFR-E2`, `NFR-E3`, `NFR-E4` | `vfs_resolve()` + `realpath()` (`E1`); `session_validate` (`401`) + 8 bước `fsp_can_access` (`403`) + Zero-Leak search/folder (`E2`); Salted SHA-256 + constant-time (`E3`); lockout 5 lần, TTL 30p, chặn `\u0000` JSON (`E4`). |
+| **F. UI/UX GTK 3** | `NFR-F1`, `NFR-F2`, `NFR-F3`, `NFR-F4` | Luồng GTK tách luồng mạng `pthread`, giao tiếp qua hàng đợi + `g_idle_add()` (`F1`); `ERROR_RESP` có trường `"error"` tiếng Việt (`F2`); `gtk_widget_set_sensitive(FALSE)` (`F3`); progress `%` + vùng nhật ký (`F4`). |
+| **G. Chất lượng C11** | `NFR-G1`, `NFR-G2`, `NFR-G3` | `ctest` headless dưới ASan + UBSan (`G1`); `-std=c11 -Wall -Wextra -Wpedantic` + `.clang-format` (`G2`); thuần POSIX socket + `pthread` (`G3`). |
+| **H. Triển khai** | `NFR-H1`, `NFR-H2` | CMake ≥ 3.16 trên Linux/WSL2 (`H1`); `fsp_client_cli` dùng chung `libfsp_common` + `fsp_client_api` (`H2`). |
 
 ---
 
@@ -302,14 +334,15 @@ int dispatcher_handle(client_ctx_t *ctx, const fsp_frame_t *req);
 * `server_main`: `fsp_listen(8088)` → lặp `accept` → `malloc(client_ctx_t)` → `pthread_create(client_thread)` → `pthread_detach`.
 * `client_thread`: lặp `fsp_recv_frame` → nếu `type == PING` trả `PONG`; nếu `FILE_CHUNK` chuyển cho M3; còn lại `dispatcher_handle`. Khi lỗi: hủy upload dở (M3), `session_destroy` (M2), `close(fd)`, `free(ctx)`.
 * Bảng dispatcher là mảng tĩnh `{tên, hàm}` (~20 phần tử), tìm tuyến tính bằng `strcmp` — đủ nhanh và dễ hiểu.
-* `SO_REUSEADDR` để khởi động lại server ngay; `SIGPIPE` bị bỏ qua (`signal(SIGPIPE, SIG_IGN)`) để `send` vào socket đã đóng trả lỗi thay vì giết tiến trình.
+* `SO_REUSEADDR` để khởi động lại server ngay; `SIGPIPE` bị bỏ qua (`signal(SIGPIPE, SIG_IGN)`) để `send` vào socket đã đóng trả lỗi thay vì giết tiến trình (`NFR-D2`).
+* Bổ sung `setsockopt(SO_RCVTIMEO)` với `FSP_SOCKET_TIMEOUT_S = 30` (`Config.h`) kết hợp `PING`/`PONG` để dọn kết nối treo im lặng (`NFR-D3`).
 * Bảng CRC32 khởi tạo **một lần trước khi tạo thread** (hoặc là mảng hằng) để tránh data race.
 
 ---
 
 ## 5. M2 — NGƯỜI DÙNG, PHIÊN & PHÂN QUYỀN (Bùi Đức Hiếu)
 
-> Logic đã cài đặt bằng C++ ở Checkpoint 1 (nhánh `feat/m2-auth-permissions`, có `docs/M2-FUNCTION-REFERENCE.md`). Phần này là đặc tả để port sang C11, **giữ nguyên hành vi và bộ test**.
+> Module M2 đã hoàn tất port sang C11 tại `include/server/fsp_{user,session,perm,auth_handler}.h` và `src/server/`. Phần này đặc tả chi tiết giao diện và hành vi tương ứng.
 
 ### 5.1 Người dùng
 * `users.json` (JSON-lines): `id`, `username`, `full_name`, `salt` (32 hex), `password_hash` (64 hex), `group_id`, `created_at`.
@@ -473,7 +506,7 @@ Dùng cùng `client_net`/`libfsp_common`, đọc lệnh từ stdin: `register`, 
 | Unit | Từng module với dữ liệu thật (buffer byte, file tạm, bảng quyền thật) | `tests/test_*.c` + CTest |
 | Tích hợp | Server thật trên cổng ngẫu nhiên + client socket trong test | CTest |
 | End-to-end | Kịch bản SRS §3.4 và bảng truy vết SRS §9 qua CLI client | Script shell + `sha256sum`, `diff -r` |
-| Bộ nhớ | Toàn bộ test dưới ASan + UBSan | `-fsanitize=address,undefined` |
+| Bộ nhớ & Race | Toàn bộ test headless dưới ASan + UBSan (`NFR-G1`); test đa luồng dưới TSan (`NFR-C3`) | `-fsanitize=address,undefined` · `-fsanitize=thread` |
 
 **Ánh xạ 6 Probe → file test:**
 | Probe | File test | Ví dụ ca kiểm thử |

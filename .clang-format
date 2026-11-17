@@ -1,7 +1,7 @@
 ---
 BasedOnStyle: Google
 Language: Cpp
-Standard: c++17
+Standard: Auto
 
 # Indentation & Alignment
 IndentWidth: 4
@@ -13,7 +13,7 @@ AccessModifierOffset: -4
 # Braces & Flow Control
 BreakBeforeBraces: Attach
 AllowShortFunctionsOnASingleLine: Inline
-AllowShortIfStatementsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
 
 # Spaces & Pointers
@@ -28,7 +28,9 @@ SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
 
 # Binary Packing
-AlignConsecutiveAssignments: None
-AlignConsecutiveDeclarations: None
+AlignConsecutiveAssignments:
+  Enabled: false
+AlignConsecutiveDeclarations:
+  Enabled: false
 ...
 

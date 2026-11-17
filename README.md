@@ -31,18 +31,18 @@ file-sharing-project/
 │       └── release.yml           # CD: Tự động đóng gói binary khi release tag
 ├── .clang-format                 # Chuẩn hóa format code C cho toàn nhóm
 ├── CMakeLists.txt                # Cấu hình build CMake & CTest
-├── AGENTS.md                     # Hiến pháp kỹ thuật & 5 nguyên tắc cấm tuyệt đối
+├── AGENTS.md                     # Hiến pháp kỹ thuật & các nguyên tắc cấm tuyệt đối
 ├── README.md                     # Hướng dẫn dự án, setup môi trường & Git workflow
-├── fsp_presentation_slides_md.md # Nội dung Slide thuyết trình & Báo cáo tiến độ Checkpoint 1
 ├── docs/                         # BỘ TÀI LIỆU CHUẨN MỰC CỦA DỰ ÁN
 │   ├── README.md                 # [BẮT BUỘC ĐỌC ĐẦU TIÊN] Hướng dẫn đọc tài liệu & Bàn giao nhiệm vụ
-│   ├── SRS.md                    # Bản Đặc tả Yêu cầu Phần mềm (v3.0 - Nguồn sự thật duy nhất)
-│   ├── LEARNING-ROADMAP.md       # Lộ trình kiến thức nền, 6 nguyên tắc cứng & 11 câu hỏi vấn đáp
-│   ├── WBS.md                    # Phân rã Công việc & Checklist 4 thành viên (v2.0)
-│   ├── SDD.md                    # Bản Thiết kế Phần mềm (v2.0 - HLD + LLD)
-│   ├── CICD.md                   # Bản Thiết kế Kiến trúc CI/CD Chuẩn Công nghiệp
-│   ├── C-MIGRATION-PLAN.md       # Kế hoạch chuẩn hóa ngôn ngữ C11 & Báo cáo khảo sát nhánh
-│   └── TDD/                      # Quy chuẩn Kiểm thử Đối kháng (6 Adversarial Probes)
+│   ├── WBS.md                    # Phân rã Công việc & Checklist 4 thành viên (v2.1)
+│   ├── pdf-document/             # Tài liệu đặc tả & thiết kế chính thức
+│   │   ├── SRS.md                # Bản Đặc tả Yêu cầu Phần mềm (v3.1 - Nguồn sự thật duy nhất)
+│   │   └── SDD.md                # Bản Thiết kế Phần mềm (v2.1 - HLD + LLD)
+│   ├── uc-details/               # Đặc tả chi tiết 13 UC (v1.0) + UC-CHECKLIST.md + NFR-CHECKLIST.md
+│   ├── reviews/                  # Biên bản code review các PR
+│   ├── archive/                  # Tài liệu lưu trữ (LEARNING-ROADMAP, CICD, PRESENTATION-SLIDES)
+│   └── TDD/                      # Quy chuẩn Kiểm thử Đối kháng (6 Adversarial Probes) & mẫu test C11
 ├── include/                      # CÁC FILE HEADER & INTERFACE CONTRACTS (.h)
 │   ├── common/
 │   │   ├── FSPProtocol.h         # [QUAN TRỌNG NHẤT] Định nghĩa Frame 42B, Chunk 88B, Events, Bitmasks
@@ -66,10 +66,10 @@ file-sharing-project/
 
 | Thành viên | MSSV | Phụ trách chính | Module cốt lõi (C11) | Checklist & Báo cáo SDD |
 | :--- | :---: | :--- | :--- | :--- |
-| **Trần Sỹ Nguyên** | 20235985 | **M1: Core Network Engine** | Raw POSIX TCP Socket, Framing 42-byte, `send_exact`/`recv_exact`, Event Dispatcher, Server 1 thread/client, Heartbeat | [docs/WBS.md](docs/WBS.md) (M1) & [docs/SDD.md](docs/SDD.md) (Chương 4) |
-| **Bùi Đức Hiếu** | 20235931 | **M2: Auth & Permissions** | Quản lý User, Salted SHA-256, Session Token, Thuật toán phân quyền Linux 9-bit bước 0–7, `PERM_GET`/`PERM_SET` đệ quy | [docs/WBS.md](docs/WBS.md) (M2) & [docs/SDD.md](docs/SDD.md) (Chương 5) |
-| **Vũ Nhật Minh Dương** | 20235925 | **M3: Filesystem & Transfer** | Virtual Sandbox (`realpath`), Lệnh FTP, Chunking 64KB, Truyền Folder đệ quy qua Manifest, Tìm kiếm lọc theo quyền | [docs/WBS.md](docs/WBS.md) (M3) & [docs/SDD.md](docs/SDD.md) (Chương 6) |
-| **Hà Đức Dương** | 20235923 | **M4: Client GUI & Integration** | GTK 3 Desktop Client (C11), Đa luồng UI (`pthread` + `g_idle_add`), Transfer Manager, Permission UI, CLI test client | [docs/WBS.md](docs/WBS.md) (M4) & [docs/SDD.md](docs/SDD.md) (Chương 7) |
+| **Trần Sỹ Nguyên** | 20235985 | **M1: Core Network Engine** | Raw POSIX TCP Socket, Framing 42-byte, `send_exact`/`recv_exact`, Event Dispatcher, Server 1 thread/client, Heartbeat | [docs/WBS.md](docs/WBS.md) (M1) & [docs/pdf-document/SDD.md](docs/pdf-document/SDD.md) (Chương 4) |
+| **Bùi Đức Hiếu** | 20235931 | **M2: Auth & Permissions** | Quản lý User, Salted SHA-256, Session Token, Thuật toán phân quyền Linux 9-bit bước 0–7, `PERM_GET`/`PERM_SET` đệ quy | [docs/WBS.md](docs/WBS.md) (M2) & [docs/pdf-document/SDD.md](docs/pdf-document/SDD.md) (Chương 5) |
+| **Vũ Nhật Minh Dương** | 20235925 | **M3: Filesystem & Transfer** | Virtual Sandbox (`realpath`), Lệnh FTP, Chunking 64KB, Truyền Folder đệ quy qua Manifest, Tìm kiếm lọc theo quyền | [docs/WBS.md](docs/WBS.md) (M3) & [docs/pdf-document/SDD.md](docs/pdf-document/SDD.md) (Chương 6) |
+| **Hà Đức Dương** | 20235923 | **M4: Client GUI & Integration** | GTK 3 Desktop Client (C11), Đa luồng UI (`pthread` + `g_idle_add`), Transfer Manager, Permission UI, CLI test client | [docs/WBS.md](docs/WBS.md) (M4) & [docs/pdf-document/SDD.md](docs/pdf-document/SDD.md) (Chương 7) |
 
 ---
 
@@ -142,18 +142,18 @@ Dự án tích hợp sẵn hệ thống CI/CD tự động bằng **GitHub Actio
 * **Build & Kiểm thử tự động (`CTest`)**: Kiểm tra kích thước header 42 bytes, chunk header 88 bytes, thuật toán CRC32 IEEE 802.3 và ma trận quyền hạn.
 * **An toàn Bộ nhớ (`AddressSanitizer` & `UBSan`)**: Trên Linux Debug, CI tự động kích hoạt `-fsanitize=address,undefined` để bắt lỗi tràn bộ nhớ (Buffer Overflow) và rò rỉ bộ nhớ (Memory Leak) trong C.
 
-👉 Xem chi tiết cấu trúc và hướng dẫn tại: [docs/CICD.md](docs/CICD.md).
+👉 Xem chi tiết cấu trúc và hướng dẫn tại: [docs/archive/CICD.md](docs/archive/CICD.md).
 
 ---
 
 ## 7. TÀI LIỆU QUAN TRỌNG CẦN ĐỌC TRƯỚC KHI CODE
 1. 🧭 **Hướng dẫn Bàn giao & Đọc Tài liệu**: Đọc [docs/README.md](docs/README.md) **đầu tiên** để nắm bản đồ tài liệu, 6 nguyên tắc cứng và bảng phân công cá nhân.
-2. 📄 **Đặc tả Yêu cầu Phần mềm**: Đọc [docs/SRS.md](docs/SRS.md) v3.0 để nắm chắc 7 yêu cầu chức năng bắt buộc, mô hình FileZilla và bảng truy vết.
-3. 🎓 **Lộ trình Kiến thức & Kế hoạch 2 tuần**: Đọc [docs/LEARNING-ROADMAP.md](docs/LEARNING-ROADMAP.md) để tự kiểm tra kiến thức và chuẩn bị 11 câu hỏi phản biện.
+2. 📄 **Đặc tả Yêu cầu Phần mềm**: Đọc [docs/pdf-document/SRS.md](docs/pdf-document/SRS.md) v3.1 để nắm chắc 7 yêu cầu chức năng bắt buộc, 27 NFR và bảng truy vết.
+3. 🎓 **Lộ trình Kiến thức & Kế hoạch 2 tuần**: Đọc [docs/archive/LEARNING-ROADMAP.md](docs/archive/LEARNING-ROADMAP.md) để tự kiểm tra kiến thức và chuẩn bị 11 câu hỏi phản biện.
 4. 📋 **Checklist Nhiệm vụ 4 Thành viên**: Đọc [docs/WBS.md](docs/WBS.md) để theo dõi tiến độ theo từng mốc.
-5. 📘 **Bản Thiết kế Phần mềm (HLD + LLD)**: Xem [docs/SDD.md](docs/SDD.md) và tự hoàn thiện chương được phân công.
-6. 🔄 **Kế hoạch Chuẩn hóa C11 & Khảo sát Checkpoint 1**: Đọc [docs/C-MIGRATION-PLAN.md](docs/C-MIGRATION-PLAN.md).
+5. 📘 **Bản Thiết kế Phần mềm (HLD + LLD)**: Xem [docs/pdf-document/SDD.md](docs/pdf-document/SDD.md) và tự hoàn thiện chương được phân công.
+6. ✅ **Checklist Use Case & Đặc tả chi tiết**: Theo dõi tiến độ tại [docs/uc-details/UC-CHECKLIST.md](docs/uc-details/UC-CHECKLIST.md), [docs/uc-details/NFR-CHECKLIST.md](docs/uc-details/NFR-CHECKLIST.md) và [docs/uc-details/](docs/uc-details/README.md).
 7. ⚙️ **Hợp đồng Giao thức Cốt lõi**: Đọc kỹ [include/common/FSPProtocol.h](include/common/FSPProtocol.h) trước khi viết lệnh mạng.
-8. 🚀 **Kiến trúc CI/CD & Kiểm thử**: Đọc [docs/CICD.md](docs/CICD.md) để biết cách test trên máy trước khi push.
+8. 🚀 **Kiến trúc CI/CD & Kiểm thử**: Đọc [docs/archive/CICD.md](docs/archive/CICD.md) để biết cách test trên máy trước khi push.
 9. 🛡️ **Quy chuẩn Kiểm thử & TDD Thực chiến**: Xem [docs/TDD/README.md](docs/TDD/README.md) để nắm ma trận 6 Probes đối kháng.
 10. 🤖 **Chỉ dẫn Kỹ thuật cho Agent & Dev**: Đọc [AGENTS.md](AGENTS.md) để tuân thủ các nguyên tắc cấm tuyệt đối.

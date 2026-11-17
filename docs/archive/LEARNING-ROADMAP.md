@@ -1,7 +1,7 @@
 # LỘ TRÌNH KIẾN THỨC & KẾ HOẠCH 2 TUẦN
 ## Dự án chia sẻ file Client-Server (Topic 6 — Group 7)
 
-> Tài liệu này đi kèm [SRS.md](SRS.md) v3.0. Mục tiêu: mỗi thành viên **hiểu và tự giải thích được** phần mình làm trước giảng viên, không chỉ "code chạy được".
+> Tài liệu này đi kèm [SRS.md](../pdf-document/SRS.md) v3.1. Mục tiêu: mỗi thành viên **hiểu và tự giải thích được** phần mình làm trước giảng viên, không chỉ "code chạy được".
 
 ---
 
@@ -60,10 +60,10 @@ Mỗi nguyên tắc gồm: **quy tắc**, **vì sao cần**, **kiểm chứng b�
 | Mô hình client-server, TCP vs UDP | Vì sao chọn TCP cho truyền file? | Beej's Guide to Network Programming, chương 1–2 |
 | Vòng đời socket | Kể thứ tự gọi hàm ở server và client | Beej's Guide, chương 5; `man 2 socket` |
 | Dòng byte & đóng gói | Vì sao cần header có `payload_len`? | Beej's Guide, mục "Son of Data Encapsulation" |
-| Giao thức FSP của nhóm | Vẽ lại header 42 byte và giải thích từng trường | [FSPProtocol.h](../include/common/FSPProtocol.h) |
+| Giao thức FSP của nhóm | Vẽ lại header 42 byte và giải thích từng trường | [FSPProtocol.h](../../include/common/FSPProtocol.h) |
 | Quản lý bộ nhớ C | Mỗi `malloc`/`fopen` được giải phóng ở đâu khi lỗi? | Mẫu `goto cleanup` trong code nhóm |
 | Git theo nhánh | Tạo nhánh, commit, mở Pull Request vào `develop` | [CICD.md](CICD.md) |
-| Build & test | Chạy `cmake`, `ctest`, bật ASan | [AGENTS.md](../AGENTS.md) mục 5 |
+| Build & test | Chạy `cmake`, `ctest`, bật ASan | [AGENTS.md](../../AGENTS.md) mục 5 |
 
 ---
 

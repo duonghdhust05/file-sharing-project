@@ -12,22 +12,22 @@ Bộ tài liệu dự án được tổ chức theo cấp bậc chặt chẽ. Đ
 
 ```mermaid
 flowchart TD
-    A["1. docs/README.md<br><i>(Bạn đang đọc ở đây - Bản đồ & Bàn giao)</i>"] --> B["2. docs/SRS.md (v3.0)<br><i>(Nguồn sự thật duy nhất: Yêu cầu & Use Case)</i>"]
-    B --> C["3. docs/LEARNING-ROADMAP.md<br><i>(Kiến thức nền, 6 nguyên tắc cứng & Ôn vấn đáp)</i>"]
-    C --> D["4. docs/WBS.md (v2.0)<br><i>(Checklist nhiệm vụ cá nhân & Mốc demo)</i>"]
-    C --> E["5. docs/SDD.md (v2.0)<br><i>(Thiết kế kỹ thuật: Cấu trúc hàm, frame, luồng)</i>"]
+    A["1. docs/README.md<br><i>(Bạn đang đọc ở đây - Bản đồ & Bàn giao)</i>"] --> B["2. docs/pdf-document/SRS.md (v3.1)<br><i>(Nguồn sự thật duy nhất: Yêu cầu & Use Case)</i>"]
+    B --> C["3. docs/archive/LEARNING-ROADMAP.md<br><i>(Kiến thức nền, 6 nguyên tắc cứng & Ôn vấn đáp)</i>"]
+    C --> D["4. docs/WBS.md (v2.1)<br><i>(Checklist nhiệm vụ cá nhân & Mốc demo)</i>"]
+    C --> E["5. docs/pdf-document/SDD.md (v2.1)<br><i>(Thiết kế kỹ thuật: Cấu trúc hàm, frame, luồng)</i>"]
     E --> F["6. AGENTS.md & docs/TDD/*<br><i>(Quy chuẩn code sạch, chống nuốt lỗi, 6 Probes)</i>"]
 ```
 
 | Thứ tự đọc | Tập tin | Mục đích & Nội dung chính | Đối tượng cần đọc |
 |:---:|:---|:---|:---:|
 | **1** | [docs/README.md](README.md) *(file này)* | Lộ trình đọc, phân công tóm tắt, nguyên tắc phối hợp | **Cả 4 thành viên** |
-| **2** | [docs/SRS.md](SRS.md) *(v3.0)* | **Nguồn sự thật:** 7 yêu cầu gốc, phần mềm tham chiếu FileZilla, 13 use case, bảng quyết định quyền bước 0–7 | **Cả 4 thành viên** (Bắt buộc) |
-| **3** | [docs/LEARNING-ROADMAP.md](LEARNING-ROADMAP.md) | 6 nguyên tắc kỹ thuật cứng, lộ trình tự học của từng người, kế hoạch 2 tuần, 11 câu hỏi giảng viên hay vặn | **Cả 4 thành viên** (Bắt buộc) |
-| **4** | [docs/WBS.md](WBS.md) *(v2.0)* | Checklist từng đầu việc nhỏ, phân rã công việc chi tiết theo từng ngày | **Cả 4 thành viên** |
-| **5** | [docs/SDD.md](SDD.md) *(v2.0)* | Thiết kế chi tiết hàm, struct, bảng sự kiện FSP, sơ đồ sequence diagram | Đọc kỹ chương module của mình |
-| **6** | [AGENTS.md](../AGENTS.md) & [docs/TDD/](TDD/README.md) | 6 quy tắc "Cấm tuyệt đối", ma trận 6 Probes đối kháng, chuẩn ASan | Khi bắt đầu viết mã & test |
-| **7** | [docs/C-MIGRATION-PLAN.md](C-MIGRATION-PLAN.md) | Bảng tra cứu port từ C++ sang C11 | M1, M2 |
+| **2** | [docs/pdf-document/SRS.md](pdf-document/SRS.md) *(v3.1)* | **Nguồn sự thật:** 7 yêu cầu gốc, phần mềm tham chiếu FileZilla, 13 use case, 27 NFR, bảng quyền bước 0–7 | **Cả 4 thành viên** (Bắt buộc) |
+| **3** | [docs/archive/LEARNING-ROADMAP.md](archive/LEARNING-ROADMAP.md) | 6 nguyên tắc kỹ thuật cứng, lộ trình tự học của từng người, kế hoạch 2 tuần, 11 câu hỏi giảng viên hay vặn | **Cả 4 thành viên** (Bắt buộc) |
+| **4** | [docs/WBS.md](WBS.md) *(v2.1)* | Checklist từng đầu việc nhỏ, phân rã công việc chi tiết theo từng ngày | **Cả 4 thành viên** |
+| **5** | [docs/pdf-document/SDD.md](pdf-document/SDD.md) *(v2.1)* | Thiết kế chi tiết hàm, struct, bảng sự kiện FSP, sơ đồ sequence diagram | Đọc kỹ chương module của mình |
+| **6** | [AGENTS.md](../AGENTS.md) & [docs/TDD/](TDD/README.md) | 6 quy tắc "Cấm tuyệt đối", ma trận 6 Probes đối kháng, chuẩn ASan/TSan | Khi bắt đầu viết mã & test |
+| **7** | [docs/uc-details/UC-CHECKLIST.md](uc-details/UC-CHECKLIST.md) & [uc-details/](uc-details/README.md) | Checklist tiến độ 13 Use Case chính thức & đặc tả chi tiết từng UC | **Cả 4 thành viên** |
 
 ---
 
@@ -54,8 +54,8 @@ Trước khi viết bất kỳ dòng mã nào, cả 4 thành viên phải thốn
 
 #### 1. Tài liệu bắt buộc đọc theo thứ tự:
 1. [include/common/FSPProtocol.h](../include/common/FSPProtocol.h): Nắm vững cấu trúc `FSPHeader` (42 byte) và `FileChunkHeader` (88 byte).
-2. [docs/SDD.md](SDD.md) Chương 3 (Giao thức FSP) & Chương 4 (Chi tiết tầng mạng M1).
-3. [docs/LEARNING-ROADMAP.md](LEARNING-ROADMAP.md) Mục 1 (NT1) và Mục 3 (Lộ trình M1).
+2. [docs/SDD.md](pdf-document/SDD.md) Chương 3 (Giao thức FSP) & Chương 4 (Chi tiết tầng mạng M1).
+3. [docs/LEARNING-ROADMAP.md](archive/LEARNING-ROADMAP.md) Mục 1 (NT1) và Mục 3 (Lộ trình M1).
 4. [docs/WBS.md](WBS.md) Mục Checklist M1.
 
 #### 2. Danh sách tập tin phụ trách:
@@ -83,10 +83,10 @@ Trước khi viết bất kỳ dòng mã nào, cả 4 thành viên phải thốn
 > **Mục tiêu:** Quản lý tài khoản, mã hóa Salted SHA-256, Session Token, thuật toán kiểm tra quyền `can_access` (bước 0–7) và các lệnh `PERM_GET`/`PERM_SET` đệ quy.
 
 #### 1. Tài liệu bắt buộc đọc theo thứ tự:
-1. [docs/SRS.md](SRS.md) Mục FR-1 (Quản lý User) và FR-6 (Phân quyền Linux 9-bit + Sharing Level).
-2. [docs/M2-FUNCTION-REFERENCE.md](M2-FUNCTION-REFERENCE.md) *(đã có trên nhánh M2)*: Tham khảo toàn bộ logic C++ đã viết sẵn và pass 190 tests ở Checkpoint 1.
-3. [docs/SDD.md](SDD.md) Chương 5 (Chi tiết Module M2).
-4. [docs/LEARNING-ROADMAP.md](LEARNING-ROADMAP.md) Mục 1 (NT2) và Mục 3 (Lộ trình M2).
+1. [docs/SRS.md](pdf-document/SRS.md) Mục FR-1 (Quản lý User) và FR-6 (Phân quyền Linux 9-bit + Sharing Level).
+2. Các header C11 đã chuẩn hóa: [fsp_user.h](../include/server/fsp_user.h), [fsp_session.h](../include/server/fsp_session.h), [fsp_perm.h](../include/server/fsp_perm.h).
+3. [docs/SDD.md](pdf-document/SDD.md) Chương 5 (Chi tiết Module M2).
+4. [docs/LEARNING-ROADMAP.md](archive/LEARNING-ROADMAP.md) Mục 1 (NT2) và Mục 3 (Lộ trình M2).
 5. [docs/WBS.md](WBS.md) Mục Checklist M2.
 
 #### 2. Danh sách tập tin phụ trách:
@@ -117,9 +117,9 @@ Trước khi viết bất kỳ dòng mã nào, cả 4 thành viên phải thốn
 > **Mục tiêu:** Xây dựng VFS Sandbox chặn Path Traversal, các lệnh FTP (`ls`, `cd`, `mkdir`, `rm`, `mv`), truyền file 64 KB (.part + CRC32), truyền thư mục đệ quy qua Manifest, và tìm kiếm file lọc theo quyền.
 
 #### 1. Tài liệu bắt buộc đọc theo thứ tự:
-1. [docs/SRS.md](SRS.md) Mục FR-2 (Lệnh FTP), FR-3 (Truyền file), FR-4 (Truyền thư mục), FR-5 (Tìm kiếm).
-2. [docs/SDD.md](SDD.md) Chương 6 (Chi tiết Module M3) & Chương 3.5 (Sequence diagram truyền file).
-3. [docs/LEARNING-ROADMAP.md](LEARNING-ROADMAP.md) Mục 1 (NT3, NT4, NT5) và Mục 3 (Lộ trình M3).
+1. [docs/SRS.md](pdf-document/SRS.md) Mục FR-2 (Lệnh FTP), FR-3 (Truyền file), FR-4 (Truyền thư mục), FR-5 (Tìm kiếm).
+2. [docs/SDD.md](pdf-document/SDD.md) Chương 6 (Chi tiết Module M3) & Chương 3.5 (Sequence diagram truyền file).
+3. [docs/LEARNING-ROADMAP.md](archive/LEARNING-ROADMAP.md) Mục 1 (NT3, NT4, NT5) và Mục 3 (Lộ trình M3).
 4. [docs/WBS.md](WBS.md) Mục Checklist M3.
 
 #### 2. Danh sách tập tin phụ trách:
@@ -151,9 +151,9 @@ Trước khi viết bất kỳ dòng mã nào, cả 4 thành viên phải thốn
 > **Mục tiêu:** Xây dựng công cụ CLI test sớm, kiến trúc Client đa luồng an toàn (UI Thread + Network Thread qua `g_idle_add`), giao diện GTK 3 bố cục 2 ngăn giống FileZilla, hộp thoại phân quyền, tìm kiếm và tích hợp toàn hệ thống.
 
 #### 1. Tài liệu bắt buộc đọc theo thứ tự:
-1. [docs/SRS.md](SRS.md) Mục FR-7 (Yêu cầu GUI) & Chương 6 (Bản vẽ giao diện UI/UX).
-2. [docs/SDD.md](SDD.md) Chương 7 (Chi tiết kiến trúc Client M4).
-3. [docs/LEARNING-ROADMAP.md](LEARNING-ROADMAP.md) Mục 1 (NT6) và Mục 3 (Lộ trình M4).
+1. [docs/SRS.md](pdf-document/SRS.md) Mục FR-7 (Yêu cầu GUI) & Chương 6 (Bản vẽ giao diện UI/UX).
+2. [docs/SDD.md](pdf-document/SDD.md) Chương 7 (Chi tiết kiến trúc Client M4).
+3. [docs/LEARNING-ROADMAP.md](archive/LEARNING-ROADMAP.md) Mục 1 (NT6) và Mục 3 (Lộ trình M4).
 4. [docs/WBS.md](WBS.md) Mục Checklist M4.
 
 #### 2. Danh sách tập tin phụ trách:
@@ -186,20 +186,20 @@ Cả nhóm bám sát lịch trình 14 ngày sau:
 
 | Giai đoạn | Ngày | Mục tiêu phối hợp | Sản phẩm cần đạt |
 |:---|:---:|:---|:---|
-| **Khởi động** | **1 – 2** | • Cả nhóm đọc xong tài liệu này, [SRS.md](SRS.md) và [LEARNING-ROADMAP.md](LEARNING-ROADMAP.md).<br>• Họp chốt định dạng JSON phẳng và TSV cho từng sự kiện. | Biên bản thống nhất hợp đồng giao thức. |
+| **Khởi động** | **1 – 2** | • Cả nhóm đọc xong tài liệu này, [SRS.md](pdf-document/SRS.md) và [LEARNING-ROADMAP.md](archive/LEARNING-ROADMAP.md).<br>• Họp chốt định dạng JSON phẳng và TSV cho từng sự kiện. | Biên bản thống nhất hợp đồng giao thức. |
 | **Giai đoạn 1** | **3 – 4** | • M1 dựng socket C11 & frame 42B.<br>• M2 port SHA-256, User store sang C11.<br>• M3 làm VFS Sandbox `realpath` + lệnh FTP cơ bản.<br>• M4 dựng CLI client khung ban đầu. | Các hàm đơn lẻ pass unit test trên máy cá nhân. |
 | **🎯 MỐC 1** | **5** | **DEMO NỘI BỘ MỐC 1: THÔNG LUỒNG MẠNG & CLI** | **Dùng CLI Client đăng ký, đăng nhập và gọi `ls`, `cd`, `mkdir` thành công qua mạng thật.** |
 | **Giai đoạn 2** | **6 – 7** | • M1 hỗ trợ truyền chunk, test 5 client đồng thời.<br>• M2 hoàn thiện thuật toán quyền bước 0–7.<br>• M3 hoàn thiện upload/download file khối 64 KB (.part + CRC32).<br>• M4 dựng xong khung GTK 2 ngăn và luồng mạng. | Upload/Download 1 file thành công. Kiểm tra file 500 MB khớp `sha256sum`. |
 | **Giai đoạn 3** | **8 – 9** | • M2 hoàn thiện `PERM_SET` đệ quy.<br>• M3 hoàn thiện truyền Folder Manifest và Search theo quyền.<br>• M4 hoàn thiện Dialog Phân quyền, Tìm kiếm và Progress bar trên GUI. | Tích hợp toàn bộ tính năng vào giao diện GTK. |
 | **🎯 MỐC 2** | **10** | **DEMO NỘI BỘ MỐC 2: FULL TÍNH NĂNG TRÊN GUI** | **Đủ 7 tính năng chạy mượt mà trên giao diện GTK 3.** |
-| **Hoàn thiện** | **11 – 13** | • Sửa lỗi tích hợp, kiểm tra toàn diện bảng truy vết SRS §9.<br>• Chạy CTest với cờ `-fsanitize=address,undefined` (bắt buộc 0 memory leak).<br>• Tự luyện tập trả lời 11 câu hỏi vấn đáp trong [LEARNING-ROADMAP.md](LEARNING-ROADMAP.md) §5. | Codebase sạch trên `develop`, hoàn thành slide thuyết trình. |
+| **Hoàn thiện** | **11 – 13** | • Sửa lỗi tích hợp, kiểm tra toàn diện bảng truy vết SRS §9.<br>• Chạy CTest với cờ `-fsanitize=address,undefined` (bắt buộc 0 memory leak).<br>• Tự luyện tập trả lời 11 câu hỏi vấn đáp trong [LEARNING-ROADMAP.md](archive/LEARNING-ROADMAP.md) §5. | Codebase sạch trên `develop`, hoàn thành slide thuyết trình. |
 | **🎯 MỐC 3** | **14** | **TỔNG DUYỆT DEMO & SẴN SÀNG BÁO CÁO TRƯỚC GIẢNG VIÊN** | **Demo trơn tru kịch bản chia sẻ file An - Bình - Chi, sẵn sàng bảo vệ.** |
 
 ---
 
 ## 5. BỘ CÂU HỎI TỰ KIỂM TRA TRƯỚC KHI GẶP GIẢNG VIÊN
 
-Trước khi bước vào buổi bảo vệ đồ án, từng thành viên tự mở [docs/LEARNING-ROADMAP.md](LEARNING-ROADMAP.md) Mục 5 và tự trả lời các câu hỏi tương ứng:
+Trước khi bước vào buổi bảo vệ đồ án, từng thành viên tự mở [docs/LEARNING-ROADMAP.md](archive/LEARNING-ROADMAP.md) Mục 5 và tự trả lời các câu hỏi tương ứng:
 * **Cả nhóm:** Vì sao tự thiết kế giao thức FSP thay vì dùng FTP có sẵn? Bố cục tham chiếu gì từ FileZilla? Hệ thống có mã hóa TLS không?
 * **M1 (Nguyên):** Vì sao TCP bị dính gói? Cơ chế `recv_exact` hoạt động ra sao? Mô hình đa luồng server xử lý thế nào khi 5 client cùng kết nối?
 * **M2 (Hiếu):** Salt là gì và vì sao cần salt ngẫu nhiên? Trình bày từng bước trong bảng quyết định `can_access`? Một file `PRIVATE` nhưng set bit người khác là `r` thì ai đọc được?

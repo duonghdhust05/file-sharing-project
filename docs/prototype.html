@@ -127,6 +127,12 @@
                 </span>
             </div>
             <div class="flex items-center gap-2">
+                <button onclick="openAuthModal()" class="bg-slate-800 hover:bg-slate-700 text-white px-2.5 py-1 rounded font-medium transition inline-flex items-center gap-1 shadow-xs">
+                    <i data-lucide="log-in" class="w-3.5 h-3.5"></i> Đăng nhập / Đăng ký
+                </button>
+                <button onclick="logoutCurrentUser()" class="bg-white border border-rose-300 text-rose-700 px-2.5 py-1 rounded font-medium hover:bg-rose-50 transition inline-flex items-center gap-1 shadow-xs">
+                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Đăng xuất
+                </button>
                 <button onclick="openSearchModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded font-medium transition inline-flex items-center gap-1.5 shadow-xs">
                     <i data-lucide="search" class="w-3.5 h-3.5"></i> Tìm kiếm tệp (Ctrl+F)
                 </button>
@@ -171,7 +177,7 @@
                 </div>
                 <div class="px-3 py-1.5 bg-slate-50 border-b border-slate-200 flex items-center gap-2 text-xs">
                     <span class="text-slate-400 font-mono text-[11px]">Thư mục:</span>
-                    <input id="local-path-input" type="text" value="C:/Users/an/Documents/" readonly class="flex-1 bg-white border border-slate-200 rounded px-2 py-0.5 font-mono text-slate-700">
+                    <input id="local-path-input" type="text" value="/home/an/Documents/" readonly class="flex-1 bg-white border border-slate-200 rounded px-2 py-0.5 font-mono text-slate-700">
                     <button onclick="navigateLocal('..')" class="p-1 hover:bg-slate-200 rounded text-slate-600" title="Lên thư mục cha">
                         <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
                     </button>
@@ -215,7 +221,7 @@
                 </div>
                 <div class="px-3 py-1.5 bg-slate-50 border-b border-slate-200 flex items-center gap-2 text-xs">
                     <span class="text-slate-400 font-mono text-[11px]">Đường dẫn ảo:</span>
-                    <input id="remote-path-input" type="text" value="/home/an" readonly class="flex-1 bg-white border border-slate-200 rounded px-2 py-0.5 font-mono text-slate-700">
+                    <input id="remote-path-input" type="text" value="/home/an" onkeydown="if(event.key==='Enter') navigateRemoteToPath(this.value)" title="Nhập đường dẫn ảo (vd: /home/an hoặc ../../etc/passwd) rồi nhấn Enter" class="flex-1 bg-white border border-slate-200 rounded px-2 py-0.5 font-mono text-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none">
                     <button onclick="navigateRemote('..')" class="p-1 hover:bg-slate-200 rounded text-slate-600" title="Lên thư mục cha">
                         <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
                     </button>
@@ -265,7 +271,7 @@
                     <span class="font-semibold text-slate-700 flex items-center gap-1.5">
                         <i data-lucide="arrow-down-up" class="w-3.5 h-3.5 text-blue-600"></i> HÀNG ĐỢI TRUYỀN TẢI (Chunking 64 KB Stream)
                     </span>
-                    <span class="text-slate-400 text-[11px]">• Giới hạn RAM &le; 50 MB • CRC32 Tức thì • File tạm .part</span>
+                    <span class="text-slate-400 text-[11px]">• Bộ đệm cố định 64 KB (RAM O(1) — NFR-B1) • CRC32 từng khối (NFR-A2) • File tạm .part (NFR-A3)</span>
                 </div>
                 <div class="text-[11px] text-slate-500">
                     Đang xử lý: <span id="active-transfers-count" class="font-semibold text-slate-800 font-mono">0</span> tiến trình
@@ -292,7 +298,7 @@
                         Phòng Thí Nghiệm Kiểm Thử Đối Kháng (6 Adversarial Probes)
                     </h2>
                     <p class="text-xs text-slate-500 mt-0.5">
-                        Quy chuẩn kiểm thử thực chiến theo <a href="../docs/TDD/README.md" class="text-blue-600 underline">docs/TDD/README.md</a> và <a href="../AGENTS.md" class="text-blue-600 underline">AGENTS.md</a>. Bấm "Chạy Thử Nghiệm" trên từng Probe để quan sát luồng gói tin thực tế.
+                        Quy chuẩn kiểm thử thực chiến theo <a href="TDD/README.md" class="text-blue-600 underline">docs/TDD/README.md</a> và <a href="../AGENTS.md" class="text-blue-600 underline">AGENTS.md</a>. Bấm "Chạy Thử Nghiệm" trên từng Probe để quan sát luồng gói tin thực tế.
                     </p>
                 </div>
                 <button onclick="runAllProbes()" class="bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-1.5 rounded-md text-xs font-semibold shadow-xs flex items-center gap-1.5 transition">
@@ -382,7 +388,7 @@
                     </div>
                     <h3 class="text-xs font-bold text-slate-900 mb-1">Lật 1 Bit Khối 64 KB & Dọn Dẹp File Tạm (.part)</h3>
                     <p class="text-[11px] text-slate-600 mb-3">
-                        Cố tình đảo 1 bit trong chunk dữ liệu 64 KB (Bit-flip). Server phải phát hiện lệch mã <code>chunk_crc</code> (CRC32 IEEE 802.3), hủy ngay phiên truyền và xóa sạch file <code>.part</code> trên đĩa (NFR-4).
+                        Cố tình đảo 1 bit trong chunk dữ liệu 64 KB (Bit-flip). Server phải phát hiện lệch mã <code>chunk_crc</code> (CRC32 IEEE 802.3), hủy ngay phiên truyền và xóa sạch file <code>.part</code> trên đĩa (NFR-A3, NFR-D1).
                     </p>
                     <div id="probe4-log" class="bg-slate-950 text-slate-300 font-mono text-[10px] p-2.5 rounded border border-slate-800 min-h-[60px] overflow-x-auto">
                         <span class="text-slate-500">// Giả lập lật bit: data[45] ^= 0xFF</span>
@@ -428,7 +434,7 @@
                     </div>
                     <h3 class="text-xs font-bold text-slate-900 mb-1">Đồng Thời &ge; 5 Client & Giao Diện Không Treo (GTK)</h3>
                     <p class="text-[11px] text-slate-600 mb-3">
-                        Kích hoạt 5 client đồng thời truyền file 500 MB. Máy chủ (1 thread / client) vận hành an toàn với <code>pthread_mutex_t</code>; luồng mạng Client cập nhật qua <code>g_idle_add()</code> $\to$ UI duy trì 60 fps, 0 data race dưới ASan.
+                        Kích hoạt 5 client đồng thời truyền file 500 MB (NFR-C1). Máy chủ (1 thread / client) vận hành an toàn với <code>pthread_mutex_t</code>; luồng mạng Client cập nhật qua <code>g_idle_add()</code> (NFR-F1) $\to$ UI mượt, 0 leak dưới ASan+UBSan (NFR-G1) &amp; 0 data race dưới TSan (NFR-C3).
                     </p>
                     <div id="probe6-log" class="bg-slate-950 text-slate-300 font-mono text-[10px] p-2.5 rounded border border-slate-800 min-h-[60px] overflow-x-auto">
                         <span class="text-slate-500">// Mô phỏng 5 client socket song song</span>
@@ -477,7 +483,8 @@
                         <div class="font-mono text-[11px] bg-slate-50 p-2 rounded border border-slate-200 text-slate-600 space-y-0.5">
                             <div>• src/common/fsp_socket.c (send_exact, recv_exact)</div>
                             <div>• src/common/fsp_packet.c (Frame 42B Header, CRC32)</div>
-                            <div>• src/common/fsp_crc32.c (IEEE 802.3 table)</div>
+                            <div>• src/common/fsp_crc32.c, fsp_json.c (IEEE 802.3, JSON phẳng)</div>
+                            <div>• src/server/fsp_server.c, fsp_dispatcher.c (1 thread/client)</div>
                             <div>• src/server/server_main.c (1 thread / client)</div>
                             <div>• src/server/fsp_dispatcher.c (Routing sự kiện)</div>
                         </div>
@@ -511,6 +518,7 @@
                             <div>• src/server/fsp_user.c (users.json, /dev/urandom salt)</div>
                             <div>• src/server/fsp_session.c (Token 30m, mutex store)</div>
                             <div>• src/server/fsp_perm.c (can_access 0–7, PERM_SET đệ quy)</div>
+                            <div>• src/server/fsp_auth_handler.c (AUTH_*, PERM_GET/SET)</div>
                         </div>
                     </div>
                     <div>
@@ -568,7 +576,8 @@
                     <div>
                         <strong class="text-slate-700 block mb-1">Tập tin C11 phụ trách:</strong>
                         <div class="font-mono text-[11px] bg-slate-50 p-2 rounded border border-slate-200 text-slate-600 space-y-0.5">
-                            <div>• src/client_cli/cli_main.c (CLI client chạy sớm Ngày 4–5)</div>
+                            <div>• src/client_api/fsp_client_api.c (Client SDK dùng chung CLI/GUI)</div>
+                            <div>• src/client_cli/cli_main.c (CLI client &amp; demo dự phòng X11)</div>
                             <div>• src/client_gui/client_net.c (Luồng mạng riêng, g_idle_add)</div>
                             <div>• src/client_gui/gui_main.c (Màn hình 2 ngăn Local/Remote)</div>
                             <div>• src/client_gui/gui_dialogs.c (Hộp thoại Quyền, Tìm kiếm, Progress)</div>
@@ -638,11 +647,12 @@
                         <div><input type="checkbox" id="perm-gr" checked class="rounded text-blue-600"></div>
                         <div><input type="checkbox" id="perm-gw" class="rounded text-blue-600"></div>
                         <div><input type="checkbox" id="perm-gs" class="rounded text-blue-600"></div>
-                        <span class="text-left font-medium text-slate-700">Người khác</span>
-                        <div><input type="checkbox" id="perm-or" class="rounded text-blue-600"></div>
-                        <div><input type="checkbox" id="perm-ow" class="rounded text-blue-600"></div>
-                        <div><input type="checkbox" id="perm-os" class="rounded text-blue-600"></div>
+                        <span class="text-left font-medium text-slate-400" title="Bộ bit Người khác không dùng để cấp quyền (SRS §4 FR-6)">Người khác</span>
+                        <div><input type="checkbox" id="perm-or" disabled class="rounded text-slate-300 opacity-50 cursor-not-allowed"></div>
+                        <div><input type="checkbox" id="perm-ow" disabled class="rounded text-slate-300 opacity-50 cursor-not-allowed"></div>
+                        <div><input type="checkbox" id="perm-os" disabled class="rounded text-slate-300 opacity-50 cursor-not-allowed"></div>
                     </div>
+                    <span class="block text-[10px] text-slate-400 mt-1">* Bộ bit Người khác không dùng để cấp quyền — dùng <code>PUBLIC</code> hoặc <code>share_list</code> (SRS §4 FR-6).</span>
                 </div>
                 <div>
                     <label class="block font-medium text-slate-700 mb-1">Mức độ chia sẻ (Sharing Level):</label>
@@ -676,11 +686,9 @@
                         <div id="modal-share-list" class="divide-y divide-slate-100 max-h-24 overflow-y-auto bg-white"></div>
                         <div class="p-1.5 bg-slate-50 border-t border-slate-200 flex items-center gap-1.5">
                             <input type="text" id="share-new-user" placeholder="username (vd: binh)" class="flex-1 bg-white border border-slate-300 rounded px-2 py-1 text-xs">
-                            <select id="share-new-perm" class="bg-white border border-slate-300 rounded px-1.5 py-1 text-xs">
-                                <option value="r">Đọc (r--)</option>
-                                <option value="rw">Đọc & Ghi (rw-)</option>
-                                <option value="rws">Toàn quyền (rws)</option>
-                            </select>
+                            <label class="inline-flex items-center gap-0.5 text-[11px] font-mono text-slate-700 cursor-pointer"><input type="checkbox" id="share-new-r" checked class="rounded text-blue-600">r</label>
+                            <label class="inline-flex items-center gap-0.5 text-[11px] font-mono text-slate-700 cursor-pointer"><input type="checkbox" id="share-new-w" class="rounded text-blue-600">w</label>
+                            <label class="inline-flex items-center gap-0.5 text-[11px] font-mono text-slate-700 cursor-pointer"><input type="checkbox" id="share-new-s" class="rounded text-blue-600">s</label>
                             <button onclick="addUserToShareList()" class="bg-slate-800 text-white px-2.5 py-1 rounded text-xs hover:bg-slate-700 transition">Thêm</button>
                         </div>
                     </div>
@@ -730,7 +738,7 @@
                     <span id="search-persona-notice-text">Đang tìm kiếm dưới danh nghĩa: <strong>an</strong></span>
                 </div>
                 <div>
-                    <label class="block text-slate-600 font-medium mb-1">Kết quả tìm kiếm:</label>
+                    <label class="block text-slate-600 font-medium mb-1">Kết quả tìm kiếm (tối đa 100 kết quả — Zero-Leak NFR-E2):</label>
                     <div class="border border-slate-200 rounded max-h-48 overflow-y-auto bg-white">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-50 text-slate-500 sticky top-0 border-b border-slate-200 text-[11px]">
@@ -774,15 +782,54 @@
         </div>
     </div>
 
+    <!-- MODAL 4: AUTH LOGIN / REGISTER (UC01, UC02 — SRS §6.1) -->
+    <div id="modal-auth" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl border border-slate-200 w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-150">
+            <div class="bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="shield" class="w-4 h-4 text-blue-400"></i>
+                    <h3 class="text-xs font-semibold">FILE SHARING CLIENT — Đăng nhập / Đăng ký</h3>
+                </div>
+                <button onclick="closeAuthModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="p-4 space-y-3 text-xs">
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="col-span-2">
+                        <label class="block text-slate-500 mb-1">Server:</label>
+                        <input type="text" id="auth-host" value="127.0.0.1" class="w-full border border-slate-300 rounded px-2 py-1 font-mono text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-slate-500 mb-1">Port:</label>
+                        <input type="text" id="auth-port" value="8088" class="w-full border border-slate-300 rounded px-2 py-1 font-mono text-xs">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-500 mb-1">Username (3–32 ký tự [A-Za-z0-9_]):</label>
+                    <input type="text" id="auth-username" value="an" class="w-full border border-slate-300 rounded px-2 py-1 font-mono text-xs">
+                </div>
+                <div>
+                    <label class="block text-slate-500 mb-1">Password (6–128 ký tự):</label>
+                    <input type="password" id="auth-password" value="secret123" class="w-full border border-slate-300 rounded px-2 py-1 font-mono text-xs">
+                </div>
+                <div id="auth-error-box" class="hidden p-2 rounded bg-rose-50 border border-rose-200 text-rose-700 text-[11px]"></div>
+            </div>
+            <div class="bg-slate-50 px-4 py-2.5 border-t border-slate-200 flex justify-end gap-2 text-xs">
+                <button id="btn-auth-register" onclick="submitAuth('register')" class="px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 font-medium transition">Đăng ký (UC01)</button>
+                <button id="btn-auth-login" onclick="submitAuth('login')" class="px-3 py-1.5 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition">Đăng nhập (UC02)</button>
+            </div>
+        </div>
+    </div>
+
     <!-- JAVASCRIPT STATE MACHINE & SIMULATOR -->
     <script>
         // --- 1. STATE & PERSONAS ---
         const USERS = {
             'an': { 
                 id: 2, username: 'an', group_id: 2, name: 'Trần An',
-                localPath: 'C:/Users/an/Documents/',
-                localDesc: 'Máy tính cá nhân của An (Nhóm trưởng)',
+                localPath: '/home/an/Documents/',
+                localDesc: 'Máy trạm Linux/WSL2 của An (Nhóm trưởng)',
                 localFiles: [
+                    { name: 'TaiLieu_Nhom', isDir: true, size: '--', bytes: 102400, children: ['de_cuong.pdf', 'ke_hoach.md'] },
                     { name: 'BaoCao_Nhom7_Draft.docx', isDir: false, size: '2.4 MB', bytes: 2516582 },
                     { name: 'slide_thuyet_trinh.pptx', isDir: false, size: '4.1 MB', bytes: 4300000 },
                     { name: 'du_lieu_thi_nghiem.zip', isDir: false, size: '45.0 MB', bytes: 47185920 }
@@ -790,7 +837,7 @@
             },
             'binh': { 
                 id: 3, username: 'binh', group_id: 3, name: 'Lê Bình',
-                localPath: 'C:/Users/binh/Downloads/',
+                localPath: '/home/binh/Downloads/',
                 localDesc: 'Máy trạm của Bình (Thành viên kiểm thử)',
                 localFiles: [
                     { name: 'phan_bien_do_an.docx', isDir: false, size: '1.1 MB', bytes: 1153433 },
@@ -799,7 +846,7 @@
             },
             'chi': { 
                 id: 4, username: 'chi', group_id: 4, name: 'Nguyễn Chi',
-                localPath: 'C:/Users/chi/Desktop/',
+                localPath: '/home/chi/Desktop/',
                 localDesc: 'Máy tính của Chi (Sinh viên lớp khác)',
                 localFiles: [
                     { name: 'bai_tap_lon_khac.pdf', isDir: false, size: '3.2 MB', bytes: 3355443 }
@@ -807,7 +854,7 @@
             },
             'admin': { 
                 id: 1, username: 'admin', group_id: 1, name: 'Quản trị viên Hệ thống',
-                localPath: 'C:/Users/admin/Workstation/',
+                localPath: '/home/admin/Workstation/',
                 localDesc: 'Máy chủ quản trị bảo mật & kiểm toán',
                 localFiles: [
                     { name: 'backup_users_2026.json', isDir: false, size: '120 KB', bytes: 122880 },
@@ -1055,9 +1102,10 @@
                     <td class="py-1.5 px-2 text-center">
                         <span class="inline-block px-2 py-0.5 text-[10px] rounded border ${access.color}">${access.text}</span>
                     </td>
-                    <td class="py-1.5 px-3 text-center">
-                        <button onclick="event.stopPropagation(); startDownloadFile('${file.path}')" class="text-blue-600 hover:text-blue-800 mr-2 font-medium">Tải</button>
-                        <button onclick="event.stopPropagation(); tryDeleteFile('${file.path}')" class="text-rose-600 hover:text-rose-800 mr-2 font-medium">Xóa</button>
+                    <td class="py-1.5 px-3 text-center whitespace-nowrap">
+                        <button onclick="event.stopPropagation(); startDownloadFile('${file.path}')" class="text-blue-600 hover:text-blue-800 mr-1.5 font-medium">Tải</button>
+                        <button onclick="event.stopPropagation(); tryRenameFile('${file.path}')" class="text-amber-600 hover:text-amber-800 mr-1.5 font-medium">Đổi tên</button>
+                        <button onclick="event.stopPropagation(); tryDeleteFile('${file.path}')" class="text-rose-600 hover:text-rose-800 mr-1.5 font-medium">Xóa</button>
                         <button onclick="event.stopPropagation(); openPermissionModal('${file.path}')" class="text-slate-600 hover:text-slate-800 font-medium">Quyền</button>
                     </td>
                 `;
@@ -1075,12 +1123,85 @@
                 parts.pop();
                 currentRemotePath = '/' + parts.join('/');
                 if (currentRemotePath === '') currentRemotePath = '/';
+                logProtocol('REQ', 'DIR_CHANGE', `{"path":".."}`);
+                logProtocol('RESP', 'DIR_CHANGE', `200 OK {"cwd":"${currentRemotePath}"}`);
                 renderRemoteFiles();
             }
         }
 
+        function navigateRemoteToPath(rawPath) {
+            const input = (rawPath || '').trim();
+            if (!input) return;
+            logProtocol('REQ', 'DIR_CHANGE', `{"path":"${input}"}`);
+            if (input.includes('..')) {
+                const segs = input.split('/');
+                let depth = input.startsWith('/') ? 0 : currentRemotePath.split('/').filter(Boolean).length;
+                for (const s of segs) {
+                    if (s === '..') depth--;
+                    else if (s && s !== '.') depth++;
+                    if (depth < 0) {
+                        logProtocol('RESP', 'DIR_CHANGE', '403 FORBIDDEN {"error":"ERR_PATH_TRAVERSAL: Vượt ra ngoài ./storage/server_root"}');
+                        alert('⛔ TỪ CHỐI 403 FORBIDDEN (Probe 5):\nĐường dẫn "' + input + '" tìm cách thoát khỏi sandbox ./storage/server_root!');
+                        document.getElementById('remote-path-input').value = currentRemotePath;
+                        return;
+                    }
+                }
+            }
+            const targetDir = remoteFS.find(f => f.path === input && f.isDir);
+            if (!targetDir && input !== '/') {
+                logProtocol('RESP', 'DIR_CHANGE', '404 NOT_FOUND {"error":"Thư mục không tồn tại"}');
+                alert('⚠️ 404 NOT FOUND: Không tìm thấy thư mục "' + input + '".');
+                document.getElementById('remote-path-input').value = currentRemotePath;
+                return;
+            }
+            if (targetDir && !checkCanAccess(currentUser, targetDir, 'READ')) {
+                logProtocol('RESP', 'DIR_CHANGE', '403 FORBIDDEN {"error":"Thiếu quyền READ"}');
+                alert('⛔ 403 FORBIDDEN: Bạn không có quyền READ trên thư mục "' + input + '".');
+                document.getElementById('remote-path-input').value = currentRemotePath;
+                return;
+            }
+            currentRemotePath = input;
+            logProtocol('RESP', 'DIR_CHANGE', `200 OK {"cwd":"${currentRemotePath}"}`);
+            renderRemoteFiles();
+        }
+
         function navigateLocal(dest) {
             alert('Máy cục bộ đang ở thư mục: ' + currentUser.localPath);
+        }
+
+        function tryRenameFile(filePath) {
+            const file = remoteFS.find(f => f.path === filePath);
+            if (!file) return;
+            if (!checkCanAccess(currentUser, file, 'WRITE')) {
+                alert(`⛔ TỪ CHỐI 403 FORBIDDEN:\nBạn (${currentUser.username}) KHÔNG có quyền GHI/ĐỔI TÊN (WRITE) trên "${file.name}".`);
+                logProtocol('RESP', 'FS_RENAME', `403 FORBIDDEN {"error":"Thiếu quyền WRITE"}`);
+                return;
+            }
+            const newName = prompt(`Đổi tên "${file.name}" (chỉ trong cùng thư mục — UC07):`, file.name);
+            if (!newName || newName.trim() === '' || newName.trim() === file.name) return;
+            if (newName.includes('/') || newName.includes('..')) {
+                logProtocol('RESP', 'FS_RENAME', '400 BAD_REQUEST {"error":"Chỉ đổi tên trong cùng thư mục"}');
+                alert('⚠️ 400 BAD REQUEST: FR-2.6 chỉ cho phép đổi tên trong cùng thư mục.');
+                return;
+            }
+            const parent = filePath.substring(0, filePath.lastIndexOf('/')) || '';
+            const newPath = `${parent}/${newName.trim()}`.replace('//', '/');
+            if (remoteFS.some(f => f.path === newPath)) {
+                logProtocol('RESP', 'FS_RENAME', '409 CONFLICT {"error":"Tên đã tồn tại"}');
+                alert('⚠️ 409 CONFLICT: Tên "' + newName.trim() + '" đã tồn tại.');
+                return;
+            }
+            const oldPrefix = filePath + '/';
+            remoteFS.forEach(f => {
+                if (f.path === filePath) {
+                    f.path = newPath;
+                    f.name = newName.trim();
+                } else if (f.path.startsWith(oldPrefix)) {
+                    f.path = newPath + '/' + f.path.substring(oldPrefix.length);
+                }
+            });
+            renderRemoteFiles();
+            logProtocol('RESP', 'FS_RENAME', `200 OK {"old":"${filePath}","new":"${newPath}"}`);
         }
 
         function tryDeleteFile(filePath) {
@@ -1093,11 +1214,17 @@
                 return;
             }
 
-            if (confirm(`Bạn có chắc muốn xóa tệp "${file.name}"?`)) {
+            if (file.isDir && remoteFS.some(f => f.path.startsWith(filePath + '/'))) {
+                logProtocol('RESP', 'FS_DELETE', `409 CONFLICT {"error":"Thư mục không rỗng (FR-2.5)"}`);
+                alert(`⚠️ TỪ CHỐI 409 CONFLICT (UC07 / FR-2.5):\nThư mục "${file.name}" đang chứa tệp con. Chỉ cho phép xóa thư mục rỗng!`);
+                return;
+            }
+
+            if (confirm(`Bạn có chắc muốn xóa "${file.name}"?`)) {
                 remoteFS = remoteFS.filter(f => f.path !== filePath);
                 renderRemoteFiles();
                 logProtocol('RESP', 'FS_DELETE', `200 OK {"path":"${filePath}"}`);
-                alert(`Đã xóa thành công tệp "${file.name}"!`);
+                alert(`Đã xóa thành công "${file.name}"!`);
             }
         }
 
@@ -1106,8 +1233,25 @@
             if (!file) return;
 
             if (!checkCanAccess(currentUser, file, 'READ')) {
-                alert(`⛔ TỪ CHỐI 403 FORBIDDEN:\nBạn (${currentUser.username}) KHÔNG có quyền ĐỌC (READ) tệp này!`);
-                logProtocol('RESP', 'FILE_DOWNLOAD_REQ', '403 FORBIDDEN {"error":"Từ chối truy cập"}');
+                alert(`⛔ TỪ CHỐI 403 FORBIDDEN:\nBạn (${currentUser.username}) KHÔNG có quyền ĐỌC (READ) mục này!`);
+                logProtocol('RESP', file.isDir ? 'FOLDER_DOWNLOAD_REQ' : 'FILE_DOWNLOAD_REQ', '403 FORBIDDEN {"error":"Từ chối truy cập"}');
+                return;
+            }
+
+            if (file.isDir) {
+                const prefix = filePath + '/';
+                const children = remoteFS.filter(f => f.path.startsWith(prefix) && !f.isDir);
+                const allowed = children.filter(f => checkCanAccess(currentUser, f, 'READ'));
+                const skipped = children.filter(f => !checkCanAccess(currentUser, f, 'READ')).map(f => f.name);
+                const transferId = ++transferIdCounter;
+                logProtocol('REQ', 'FOLDER_DOWNLOAD_REQ', `{"path":"${filePath}"}`);
+                logProtocol('RESP', 'FOLDER_DOWNLOAD_REQ', `200 OK {"count":${allowed.length},"skipped":${skipped.length}}`);
+                const totalBytes = allowed.reduce((sum, f) => sum + (f.bytes || 65536), 0) || 65536;
+                addTransferToQueue(transferId, 'DOWNLOAD', `${file.name}/ (${allowed.length} file)`, `${allowed.length} files`, totalBytes, () => {
+                    if (skipped.length > 0) {
+                        alert(`📁 Đã tải thư mục "${file.name}/" (${allowed.length} file).\n⚠️ Bỏ qua ${skipped.length} mục không có quyền READ (FR-4.3): ${skipped.join(', ')}`);
+                    }
+                });
                 return;
             }
 
@@ -1123,7 +1267,7 @@
             });
         }
 
-        function startUploadFile(name, sizeStr, totalBytes) {
+        function startUploadFile(name, sizeStr, totalBytes, isDir = false, children = []) {
             const targetDir = remoteFS.find(f => f.path === currentRemotePath);
             if (targetDir && !checkCanAccess(currentUser, targetDir, 'WRITE')) {
                 alert(`⛔ TỪ CHỐI 403 FORBIDDEN:\nBạn (${currentUser.username}) không có quyền GHI vào thư mục "${targetDir.path}"!`);
@@ -1132,6 +1276,25 @@
 
             const transferId = ++transferIdCounter;
             const targetPath = `${currentRemotePath}/${name}`.replace('//', '/');
+
+            if (isDir) {
+                logProtocol('REQ', 'FOLDER_UPLOAD_REQ', `{"path":"${targetPath}","files":${children.length}}`);
+                logProtocol('RESP', 'FOLDER_UPLOAD_REQ', `201 CREATED {"dirs":1}`);
+                addTransferToQueue(transferId, 'UPLOAD', `${name}/ (${children.length} file)`, `${children.length} files`, totalBytes, () => {
+                    remoteFS.push({ path: targetPath, name, isDir: true, size: '--', bytes: 0, owner: currentUser.username, perm: '0755', level: 'PRIVATE', share_list: [] });
+                    children.forEach(cName => {
+                        remoteFS.push({ path: `${targetPath}/${cName}`, name: cName, isDir: false, size: '50 KB', bytes: 51200, owner: currentUser.username, perm: '0644', level: 'PRIVATE', share_list: [] });
+                    });
+                    renderRemoteFiles();
+                });
+                return;
+            }
+
+            if (remoteFS.some(f => f.path === targetPath)) {
+                logProtocol('RESP', 'FILE_UPLOAD_REQ', `409 CONFLICT {"error":"File đã tồn tại (FR-3.5)"}`);
+                alert(`⚠️ TỪ CHỐI 409 CONFLICT:\nTệp "${name}" đã tồn tại tại "${currentRemotePath}" (không ghi đè).`);
+                return;
+            }
 
             logProtocol('REQ', 'FILE_UPLOAD_REQ', `{"path":"${targetPath}","size":${totalBytes},"chunk_size":65536}`);
             logProtocol('RESP', 'FILE_UPLOAD_REQ', `200 OK {"transfer_id":${transferId},"total_chunks":${Math.ceil(totalBytes / 65536)}}`);
@@ -1156,7 +1319,7 @@
 
         function uploadSelectedLocalFile() {
             const file = currentUser.localFiles[selectedLocalIndex];
-            if (file) startUploadFile(file.name, file.size, file.bytes);
+            if (file) startUploadFile(file.name, file.size, file.bytes, !!file.isDir, file.children || []);
         }
 
         function downloadSelectedRemoteFile() {
@@ -1205,7 +1368,7 @@
 
                 if (percent >= 100) {
                     clearInterval(interval);
-                    if (speed) speed.innerHTML = '<span class="text-emerald-600 font-semibold">✓ Đã băm SHA-256</span>';
+                    if (speed) speed.innerHTML = '<span class="text-emerald-600 font-semibold">✓ CRC32 OK • Đã đổi tên .part</span>';
                     if (bar) bar.className = "bg-emerald-600 h-2 rounded-full";
                     if (onFinish) onFinish();
                 }
@@ -1267,14 +1430,80 @@
 
         function addUserToShareList() {
             const userInput = document.getElementById('share-new-user');
-            const permInput = document.getElementById('share-new-perm');
             const username = userInput.value.trim().toLowerCase();
             if (!username) return;
-            if (!USERS[username]) { alert(`User "${username}" không tồn tại!`); return; }
+            if (!USERS[username]) { alert(`404 NOT FOUND: User "${username}" không tồn tại!`); return; }
 
-            currentEditingFile.share_list.push({ user: username, mask: permInput.value });
+            let mask = '';
+            if (document.getElementById('share-new-r').checked) mask += 'r';
+            if (document.getElementById('share-new-w').checked) mask += 'w';
+            if (document.getElementById('share-new-s').checked) mask += 's';
+            if (!mask) { alert('Vui lòng chọn ít nhất 1 quyền (r/w/s).'); return; }
+
+            currentEditingFile.share_list.push({ user: username, mask });
             userInput.value = '';
             renderModalShareList();
+        }
+
+        function openAuthModal() {
+            document.getElementById('auth-error-box').classList.add('hidden');
+            document.getElementById('modal-auth').classList.remove('hidden');
+            document.getElementById('modal-auth').classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeAuthModal() {
+            document.getElementById('modal-auth').classList.add('hidden');
+            document.getElementById('modal-auth').classList.remove('flex');
+        }
+
+        function submitAuth(mode) {
+            const u = document.getElementById('auth-username').value.trim();
+            const p = document.getElementById('auth-password').value;
+            const errBox = document.getElementById('auth-error-box');
+            const btnReg = document.getElementById('btn-auth-register');
+            const btnLog = document.getElementById('btn-auth-login');
+            btnReg.disabled = true; btnLog.disabled = true;
+
+            setTimeout(() => {
+                btnReg.disabled = false; btnLog.disabled = false;
+                if (!/^[A-Za-z0-9_]{3,32}$/.test(u) || p.length < 6 || p.length > 128) {
+                    errBox.innerText = '400 BAD REQUEST: Username 3–32 ký tự [A-Za-z0-9_], Password 6–128 ký tự.';
+                    errBox.classList.remove('hidden');
+                    logProtocol('RESP', mode === 'register' ? 'AUTH_REGISTER' : 'AUTH_LOGIN', '400 BAD_REQUEST');
+                    return;
+                }
+                if (mode === 'register') {
+                    if (USERS[u]) {
+                        errBox.innerText = '409 CONFLICT: Tên tài khoản đã tồn tại.';
+                        errBox.classList.remove('hidden');
+                        logProtocol('RESP', 'AUTH_REGISTER', '409 CONFLICT');
+                        return;
+                    }
+                    USERS[u] = { id: Object.keys(USERS).length + 1, username: u, group_id: Object.keys(USERS).length + 1, name: u, localPath: `/home/${u}/Documents/`, localDesc: `Máy trạm của ${u}`, localFiles: [] };
+                    remoteFS.push({ path: `/home/${u}`, name: u, isDir: true, size: '--', bytes: 0, owner: u, perm: '0755', level: 'PRIVATE', share_list: [] });
+                    logProtocol('RESP', 'AUTH_REGISTER', `201 CREATED {"user_id":${USERS[u].id}}`);
+                    closeAuthModal();
+                    switchUser(u);
+                } else {
+                    if (!USERS[u]) {
+                        errBox.innerText = '401 UNAUTHORIZED: Sai tên đăng nhập hoặc mật khẩu.';
+                        errBox.classList.remove('hidden');
+                        logProtocol('RESP', 'AUTH_LOGIN', '401 UNAUTHORIZED');
+                        return;
+                    }
+                    closeAuthModal();
+                    switchUser(u);
+                }
+            }, 120);
+        }
+
+        function logoutCurrentUser() {
+            const tok = document.getElementById('session-token-badge').innerText;
+            logProtocol('REQ', 'AUTH_LOGOUT', `{"token":"${tok}"}`);
+            logProtocol('RESP', 'AUTH_LOGOUT', '200 OK {"message":"Logged out"}');
+            document.getElementById('session-token-badge').innerText = '(đã đăng xuất)';
+            openAuthModal();
         }
 
         function removeUserFromShareList(index) {
@@ -1425,7 +1654,7 @@
                 <div class="text-rose-400">[CHUNK TAMPER] Gửi chunk #2 (64 KB): Lật 1 bit data[45] ^= 0xFF</div>
                 <div class="text-slate-300">-> Tính fsp_crc32(chunk_data) = 0x5E81A2B0 != chunk_crc trong header (0x9F4C2A11)</div>
                 <div class="text-rose-400">-> Server phát hiện sai lệch CRC! Hủy ghi đĩa, đóng kết nối và xóa file tạm upload_temp.part</div>
-                <div class="text-emerald-400 font-bold">✓ THÀNH CÔNG: Bắt trúng lỗi bit-flip, không để lại file rác .part trên đĩa (NFR-4)!</div>
+                <div class="text-emerald-400 font-bold">✓ THÀNH CÔNG: Bắt trúng lỗi bit-flip, không để lại file rác .part trên đĩa (NFR-A3, NFR-D1)!</div>
             `;
             badge.innerHTML = '<span class="text-emerald-600 font-bold">✓ ĐẠT (Passed)</span>';
         }
@@ -1449,7 +1678,7 @@
                 <div class="text-indigo-400">[CONCURRENCY] Khởi tạo 5 client socket song song gửi dữ liệu tệp 500 MB</div>
                 <div class="text-slate-300">-> Server 1 thread / client: Dữ liệu dùng chung bảo vệ bằng pthread_mutex_t an toàn</div>
                 <div class="text-slate-300">-> Client GUI: Luồng GTK nhận kết quả qua g_idle_add(), duy trì 60 fps không treo</div>
-                <div class="text-emerald-400 font-bold">✓ THÀNH CÔNG: Cả 5 client hoàn tất truyền tải. Kiểm tra ASan/UBSan: 0 leak, 0 race!</div>
+                <div class="text-emerald-400 font-bold">✓ THÀNH CÔNG: Cả 5 client hoàn tất truyền tải. Kiểm tra ASan+UBSan (NFR-G1) &amp; TSan (NFR-C3): 0 leak, 0 race!</div>
             `;
             badge.innerHTML = '<span class="text-emerald-600 font-bold">✓ ĐẠT (Passed)</span>';
         }

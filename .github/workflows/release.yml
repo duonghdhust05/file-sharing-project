@@ -8,7 +8,7 @@ on:
 
 jobs:
   # =========================================================================
-  # 1. Build & Package Release Binaries for Ubuntu & Windows
+  # 1. Build & Package Release Binaries for Linux (C11 POSIX)
   # =========================================================================
   package-binaries:
     name: Package (${{ matrix.os }})
@@ -23,19 +23,9 @@ jobs:
               cmake --build build --config Release --parallel
               mkdir package
               cp build/fsp_server package/
-              cp build/fsp_client_cli package/
+              if [ -f build/fsp_client_cli ]; then cp build/fsp_client_cli package/; fi
               cp README.md package/
               tar -czvf fsp-linux-x86_64.tar.gz -C package .
-          - os: windows-latest
-            artifact_name: fsp-windows-x64.zip
-            build_cmd: |
-              cmake -B build -S .
-              cmake --build build --config Release --parallel
-              mkdir -p package
-              cp build/Release/fsp_server.exe package/
-              cp build/Release/fsp_client_cli.exe package/
-              cp README.md package/
-              powershell -Command "Compress-Archive -Path 'package/*' -DestinationPath 'fsp-windows-x64.zip'"
 
     steps:
       - name: Checkout Code
@@ -70,17 +60,11 @@ jobs:
         with:
           name: fsp-linux-x86_64.tar.gz
 
-      - name: Download Windows Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: fsp-windows-x64.zip
-
       - name: Create GitHub Release Asset
         uses: softprops/action-gh-release@v2
         with:
           files: |
             fsp-linux-x86_64.tar.gz
-            fsp-windows-x64.zip
           generate_release_notes: true
           draft: false
           prerelease: false
